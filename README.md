@@ -1,15 +1,14 @@
-# playground
+# 🧱 TS DataBuilders
+DataBuilder Generator is a lightweight CLI tool that automatically generates builder classes from annotated TypeScript interfaces.
+Just add a @DataBuilder JSDoc tag, run one command, and get a fully-typed builder ready to use in your tests or factories.
 
-To install dependencies:
+Built with [Effect](https://effect.website/).
 
-```bash
-bun install
-```
+[Read about TS DataBuilders.](http://www.natpryce.com/articles/000714.html)
 
-To run:
-
-```bash
-bun run index.ts
-```
-
-This project was created using `bun init` in bun v1.2.21. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+## 🚀 Features
+- 🔍 Scans your repo for specific pattern to understand what builders to build
+- ⚡ Generates builder classes with fluent withX() methods and sensible defaults
+- 🧩 Type-safe — builders are generated directly from your TypeScript types
+- 🧠 Fast and Memory-efficient — processes files asynchronously and incrementally via streams
+- 🛠️ Pluggable — works with any TypeScript project layout

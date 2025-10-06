@@ -1,14 +1,26 @@
-import { Command } from '@effect/cli';
-import { BunContext, BunRuntime } from '@effect/platform-bun';
-import { Console, Effect } from 'effect';
+import * as BunContext from '@effect/platform-bun/BunContext';
+import * as BunRuntime from '@effect/platform-bun/BunRuntime';
+import { Glob } from 'bun';
+import { Effect } from 'effect';
+import * as Layer from 'effect/Layer';
+import * as Stream from 'effect/Stream';
+import { CliLayer, cli } from './command';
+import { TreeWalker, TreeWalkerError } from './finder';
 
-const command = Command.make('ts-databuilders', {}, () =>
-  Console.log('Hello World'),
-);
-
-const cli = Command.run(command, {
-  name: 'Typescript Databuilders generator',
-  version: 'v0.0.1',
+const BunTreeWalker = TreeWalker.of({
+  walk: (path) => {
+    const glob = new Glob(path);
+    return Stream.fromAsyncIterable(
+      // TODO: replace hardcoded example-data
+      glob.scan('example-data'),
+      (originalError) => new TreeWalkerError({ cause: originalError }),
+    );
+  },
 });
 
-cli(process.argv).pipe(Effect.provide(BunContext.layer), BunRuntime.runMain);
+const MainLayer = Layer.empty.pipe(
+  Layer.merge(Layer.succeed(TreeWalker, TreeWalker.of(BunTreeWalker))),
+  Layer.merge(Layer.provideMerge(CliLayer, BunContext.layer)),
+);
+
+cli(process.argv).pipe(Effect.provide(MainLayer), BunRuntime.runMain);

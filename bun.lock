@@ -4,17 +4,18 @@
     "": {
       "name": "playground",
       "dependencies": {
-        "@effect/cli": "^0.71.0",
-        "effect": "^3.18.3",
+        "@effect/cli": "latest",
+        "@effect/platform": "latest",
+        "effect": "latest",
       },
       "devDependencies": {
-        "@biomejs/biome": "^2.2.5",
-        "@effect/language-service": "^0.42.0",
-        "@effect/platform-bun": "^0.81.1",
-        "@types/bun": "^1.2.23",
+        "@biomejs/biome": "latest",
+        "@effect/language-service": "latest",
+        "@effect/platform-bun": "latest",
+        "@types/bun": "latest",
       },
       "peerDependencies": {
-        "typescript": "^5.9.3",
+        "typescript": "latest",
       },
     },
   },
@@ -119,7 +120,7 @@
 
     "detect-libc": ["detect-libc@1.0.3", "", { "bin": { "detect-libc": "./bin/detect-libc.js" } }, "sha512-pGjwhsmsp4kL2RTz08wcOlGN83otlqHeD/Z5T8GXZB+/YcpQ/dgo+lbU8ZsGxV0HIvqqxo9l7mqYwyYMD9bKDg=="],
 
-    "effect": ["effect@3.18.3", "", { "dependencies": { "@standard-schema/spec": "^1.0.0", "fast-check": "^3.23.1" } }, "sha512-CmsQdMJdcBk+HigAtiNYb0Fp2xHtZmHjuCgYXDF74IGCCk+4EvQwQG4oHwG4XLFSqQ9eTIOIJ/+4FOYP05aBHg=="],
+    "effect": ["effect@3.18.4", "", { "dependencies": { "@standard-schema/spec": "^1.0.0", "fast-check": "^3.23.1" } }, "sha512-b1LXQJLe9D11wfnOKAk3PKxuqYshQ0Heez+y5pnkd3jLj1yx9QhM72zZ9uUrOQyNvrs2GZZd/3maL0ZV18YuDA=="],
 
     "fast-check": ["fast-check@3.23.2", "", { "dependencies": { "pure-rand": "^6.1.0" } }, "sha512-h5+1OzzfCC3Ef7VbtKdcv7zsstUQwUDlYpUTvjeUsJAssPgLn7QzbboPtL5ro04Mq0rPOsMzl7q5hIbRs2wD1A=="],
 
