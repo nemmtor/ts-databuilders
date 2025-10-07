@@ -12,19 +12,15 @@ export class Finder extends Effect.Service<Finder>()('Finder', {
 
     return {
       // TODO: these could done be via DI
-      find: Effect.fnUntraced(function* (
-        term: string,
-        path: string,
-        include = '**/*.ts',
-      ) {
+      find: Effect.fnUntraced(function* (term: string, glob: string) {
         const treeWalker = yield* TreeWalker;
-        const pathsStream = treeWalker.walk(include);
+        const pathsStream = treeWalker.walk(glob);
 
         const fileNamesWithContent = yield* pathsStream.pipe(
           Stream.mapEffect(
             (filePath) =>
               fileContentChecker
-                .check(`${path}/${filePath}`, term)
+                .check(filePath, term)
                 .pipe(
                   Effect.map(
                     Chunk.map((v) =>

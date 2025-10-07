@@ -11,8 +11,7 @@ const BunTreeWalker = TreeWalker.of({
   walk: (path) => {
     const glob = new Glob(path);
     return Stream.fromAsyncIterable(
-      // TODO: replace hardcoded example-data
-      glob.scan('example-data'),
+      glob.scan('.'),
       (originalError) => new TreeWalkerError({ cause: originalError }),
     );
   },

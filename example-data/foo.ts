@@ -1,7 +1,17 @@
-/** @DataBuilder */
+/**
+ * @DataBuilder
+ * @constructor
+ * @param foo: string
+ */
 export type Foo = {
-  bar: string;
-  baz: Date;
-  isFoo: boolean;
-  xyz: number;
+  bar?: string;
+  baz: string;
+};
+
+/**
+ * @DataBuilder
+ */
+export type Bar = {
+  bar?: string;
+  baz: string;
 };

@@ -4,12 +4,13 @@
   "private": true,
   "scripts": {
     "check-types": "tsc -b tsconfig.json",
-    "start": "bun src/main.ts"
+    "start": "bun --console-depth 10 src/main.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.2.5",
-    "@effect/language-service": "^0.42.0",
+    "@effect/language-service": "^0.43.2",
     "@effect/platform-bun": "^0.81.1",
+    "@total-typescript/ts-reset": "^0.6.1",
     "@types/bun": "^1.2.23"
   },
   "peerDependencies": {
@@ -18,6 +19,7 @@
   "dependencies": {
     "@effect/cli": "^0.71.0",
     "@effect/platform": "^0.92.1",
-    "effect": "^3.18.4"
+    "effect": "^3.18.4",
+    "ts-morph": "^27.0.0"
   }
 }
