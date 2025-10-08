@@ -6,7 +6,7 @@ import * as Stream from 'effect/Stream';
 import { FileContentChecker } from './file-content-checker';
 import { TreeWalker } from './tree-walker';
 
-export class Finder extends Effect.Service<Finder>()('Finder', {
+export class Finder extends Effect.Service<Finder>()('@TSDataBuilders/Finder', {
   effect: Effect.gen(function* () {
     const fileContentChecker = yield* FileContentChecker;
 

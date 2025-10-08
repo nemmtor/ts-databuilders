@@ -3,7 +3,7 @@ import * as Effect from 'effect/Effect';
 import * as Stream from 'effect/Stream';
 
 export class FileContentChecker extends Effect.Service<FileContentChecker>()(
-  'FileContentChecker',
+  '@TSDataBuilders/FileContentChecker',
   {
     effect: Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;

@@ -3,15 +3,23 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "start": "bun --console-depth 10 src/main.ts",
+    "format": "biome format",
+    "format:fix": "biome format --write",
+    "lint": "biome lint",
+    "lint:fix": "biome lint --write",
+    "check-actions": "pnpm exec biome check --formatter-enabled=false --linter-enabled=false",
+    "check-actions:fix": "pnpm exec biome check --formatter-enabled=false --linter-enabled=false --write",
     "check-types": "tsc -b tsconfig.json",
-    "start": "bun --console-depth 10 src/main.ts"
+    "check-knip": "knip"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.2.5",
-    "@effect/language-service": "^0.43.2",
+    "@effect/language-service": "^0.44.0",
     "@effect/platform-bun": "^0.81.1",
     "@total-typescript/ts-reset": "^0.6.1",
-    "@types/bun": "^1.2.23"
+    "@types/bun": "^1.2.23",
+    "knip": "^5.64.3"
   },
   "peerDependencies": {
     "typescript": "^5.9.3"

@@ -1,11 +1,10 @@
-import type { TypeAliasDeclaration } from 'ts-morph';
-import ts from 'typescript';
+import { SyntaxKind, type TypeAliasDeclaration } from 'ts-morph';
 
 export const getTypeLiteralNodes = (typeAliases: TypeAliasDeclaration[]) => {
   return typeAliases
     .map((typeAlias) => {
       const node = typeAlias.getTypeNode();
-      if (!node || !node.isKind(ts.SyntaxKind.TypeLiteral)) {
+      if (!node || !node.isKind(SyntaxKind.TypeLiteral)) {
         return undefined;
       }
 

@@ -1,17 +1,15 @@
 import * as Data from 'effect/Data';
 import * as Effect from 'effect/Effect';
+import * as Function from 'effect/Function';
 import * as Match from 'effect/Match';
+import * as Option from 'effect/Option';
 import {
   type PropertySignature,
   SyntaxKind,
   type TypeElementTypes,
   type TypeLiteralNode,
 } from 'ts-morph';
-import {
-  isSupportedSyntaxKind,
-  SUPPORTED_SYNTAX_KIND,
-  type SupportedSyntaxKind,
-} from './supported-types';
+import { PROPERTY_TYPE, type PropertyType } from './supported-types';
 
 // type UnionTypePropertyShape = {
 //   optional: boolean;
@@ -19,9 +17,12 @@ import {
 //   members: SyntaxKind[];
 // };
 
-type TypePropertyShape = {
+export type TypePropertyShape = {
   optional: boolean;
-  kind: SupportedSyntaxKind;
+  kind: Extract<
+    PropertyType,
+    'BOOLEAN' | 'STRING' | 'NUMBER' | 'DATE' | 'UNDEFINED' | 'NULL'
+  >;
 };
 export type TypeLiteralShape = Record<string, TypePropertyShape>;
 
@@ -50,13 +51,9 @@ export const buildTypeLiteralShape = Effect.fnUntraced(function* (
   );
 });
 
-const buildProperty: (
+const buildProperty = Effect.fnUntraced(function* (
   propertySignature: PropertySignature,
-) => Effect.Effect<
-  TypePropertyShape,
-  SignatureTypeNodeNotFound | UnsupportedSyntaxKind,
-  never
-> = Effect.fnUntraced(function* (propertySignature) {
+) {
   const typeNode = propertySignature.getTypeNode();
   if (!typeNode) {
     return yield* new SignatureTypeNodeNotFound();
@@ -64,10 +61,6 @@ const buildProperty: (
 
   const optional = propertySignature.hasQuestionToken();
   const kind = typeNode.getKind();
-
-  if (!isSupportedSyntaxKind(kind)) {
-    return yield* new UnsupportedSyntaxKind({ kind });
-  }
 
   // if (kind === ts.SyntaxKind.UnionType) {
   //   return Option.some<TypePropertyShape>({
@@ -81,14 +74,56 @@ const buildProperty: (
   // }
 
   // TODO: handle rest of kinds
-  return Match.value<SupportedSyntaxKind>(kind).pipe(
+  const typePropertyShape = Match.value<SyntaxKind>(kind).pipe(
     Match.withReturnType<TypePropertyShape>(),
-    Match.when(Match.is(SUPPORTED_SYNTAX_KIND.STRING_KEYWORD), (kind) => ({
-      kind,
+    Match.when(Match.is(SyntaxKind.StringKeyword), () => ({
+      kind: PROPERTY_TYPE.STRING,
       optional,
     })),
-    Match.exhaustive,
+    Match.when(Match.is(SyntaxKind.NumberKeyword), () => ({
+      kind: PROPERTY_TYPE.NUMBER,
+      optional,
+    })),
+    Match.when(Match.is(SyntaxKind.BooleanKeyword), () => ({
+      kind: PROPERTY_TYPE.BOOLEAN,
+      optional,
+    })),
+    Match.when(
+      (kind) =>
+        kind === SyntaxKind.TypeReference && typeNode.getText() === 'Date',
+      () => ({
+        kind: PROPERTY_TYPE.DATE,
+        optional,
+      }),
+    ),
+    Match.when(
+      (kind) => kind === SyntaxKind.UndefinedKeyword,
+      () => ({
+        kind: PROPERTY_TYPE.UNDEFINED,
+        optional,
+      }),
+    ),
+    Match.when(
+      (kind) =>
+        kind === SyntaxKind.LiteralType &&
+        typeNode
+          .asKindOrThrow(SyntaxKind.LiteralType)
+          .getLiteral()
+          .getKind() === SyntaxKind.NullKeyword,
+      () => ({
+        kind: PROPERTY_TYPE.NULL,
+        optional,
+      }),
+    ),
+    Match.option,
+    Function.identity<Option.Option<TypePropertyShape>>,
   );
+
+  if (Option.isNone(typePropertyShape)) {
+    return yield* new UnsupportedSyntaxKind({ kind, raw: typeNode.getText() });
+  }
+
+  return typePropertyShape.value;
 });
 
 class SignatureTypeNodeNotFound extends Data.TaggedError(
@@ -97,4 +132,5 @@ class SignatureTypeNodeNotFound extends Data.TaggedError(
 
 class UnsupportedSyntaxKind extends Data.TaggedError('UnsupportedSyntaxKind')<{
   kind: SyntaxKind;
+  raw: string;
 }> {}
