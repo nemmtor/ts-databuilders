@@ -28,7 +28,7 @@ export class Finder extends Effect.Service<Finder>()('Finder', {
                     ),
                   ),
                 ),
-            { concurrency: 4 },
+            { concurrency: 'unbounded' },
           ),
           Stream.runCollect,
           Effect.map(Chunk.flatMap(Function.identity)),

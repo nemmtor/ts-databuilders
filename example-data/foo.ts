@@ -4,7 +4,7 @@
  * @param foo: string
  */
 export type Foo = {
-  bar?: string;
+  bar: string;
   baz: string;
 };
 
@@ -12,6 +12,5 @@ export type Foo = {
  * @DataBuilder
  */
 export type Bar = {
-  bar?: string;
-  baz: string;
+  fooz: string;
 };

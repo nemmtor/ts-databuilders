@@ -11,6 +11,7 @@ import { getTypeLiteralNodes } from './get-type-literal-nodes';
 export type ParsedType = {
   name: string;
   shape: TypeLiteralShape;
+  path: string;
 };
 
 export class Parser extends Effect.Service<Parser>()('Parser', {
@@ -34,7 +35,7 @@ export class Parser extends Effect.Service<Parser>()('Parser', {
         const result: ParsedType[] = yield* Effect.all(
           typeLiteralNodes.map(({ name, node }) =>
             buildTypeLiteralShape(node).pipe(
-              Effect.map((shape) => ({ name, shape })),
+              Effect.map((shape) => ({ name, shape, path })),
             ),
           ),
         );

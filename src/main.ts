@@ -4,6 +4,7 @@ import { Glob } from 'bun';
 import { Effect } from 'effect';
 import * as Layer from 'effect/Layer';
 import * as Stream from 'effect/Stream';
+import { BuilderGenerator } from './builder-generator';
 import { CliLayer, cli } from './command';
 import { TreeWalker, TreeWalkerError } from './finder';
 
@@ -18,8 +19,10 @@ const BunTreeWalker = TreeWalker.of({
 });
 
 const MainLayer = Layer.empty.pipe(
+  Layer.merge(BuilderGenerator.Default),
   Layer.merge(Layer.succeed(TreeWalker, TreeWalker.of(BunTreeWalker))),
-  Layer.merge(Layer.provideMerge(CliLayer, BunContext.layer)),
+  Layer.merge(CliLayer),
+  Layer.provideMerge(BunContext.layer),
 );
 
 cli(process.argv).pipe(Effect.provide(MainLayer), BunRuntime.runMain);

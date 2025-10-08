@@ -13,18 +13,16 @@ import {
   type SupportedSyntaxKind,
 } from './supported-types';
 
-type UnionTypePropertyShape = {
-  optional: boolean;
-  kind: SyntaxKind.UnionType;
-  members: SyntaxKind[];
-};
-type TypePropertyShape =
-  | {
-      optional: boolean;
-      kind: Exclude<SyntaxKind, SyntaxKind.UnionType>;
-    }
-  | UnionTypePropertyShape;
+// type UnionTypePropertyShape = {
+//   optional: boolean;
+//   kind: SyntaxKind.UnionType;
+//   members: SyntaxKind[];
+// };
 
+type TypePropertyShape = {
+  optional: boolean;
+  kind: SupportedSyntaxKind;
+};
 export type TypeLiteralShape = Record<string, TypePropertyShape>;
 
 export const buildTypeLiteralShape = Effect.fnUntraced(function* (

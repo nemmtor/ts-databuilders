@@ -3,6 +3,7 @@ import * as Chunk from 'effect/Chunk';
 import * as Effect from 'effect/Effect';
 import * as Function from 'effect/Function';
 import * as Layer from 'effect/Layer';
+import { BuilderGenerator } from './builder-generator';
 import { Finder } from './finder';
 import { Parser } from './parser';
 
@@ -12,19 +13,31 @@ const command = Command.make(
   Effect.fnUntraced(function* () {
     const finder = yield* Finder;
     const parser = yield* Parser;
+    const builderGenerator = yield* BuilderGenerator;
     // TODO: replace hardcoded args
     const filePaths = yield* finder.find(
       '@DataBuilder',
       'example-data/**/*.ts',
     );
-    const results = yield* Effect.all(
+    const parsedTypes = yield* Effect.all(
       Chunk.map(filePaths, (filePath) =>
         parser.parse(filePath, '@DataBuilder'),
       ),
-      { concurrency: 4 },
+      { concurrency: 'unbounded' },
+    ).pipe(Effect.map((v) => v.flatMap(Function.identity)));
+
+    if (parsedTypes.length === 0) {
+      return;
+    }
+
+    yield* builderGenerator.createOutputDir('generated/builders');
+    yield* builderGenerator.generateBaseBuilder('generated/builders');
+    const generateBuildersEffect = parsedTypes.map((parsedType) =>
+      Effect.sync(() =>
+        builderGenerator.generateBuilderFor(parsedType, 'generated/builders'),
+      ),
     );
-    const flatResult = results.flatMap(Function.identity);
-    yield* Effect.log(flatResult);
+    yield* Effect.all(generateBuildersEffect, { concurrency: 'unbounded' });
   }),
 );
 
