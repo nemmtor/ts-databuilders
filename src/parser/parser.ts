@@ -1,4 +1,5 @@
 import * as FileSystem from '@effect/platform/FileSystem';
+import * as Config from 'effect/Config';
 import * as Data from 'effect/Data';
 import * as Effect from 'effect/Effect';
 import { Project, SyntaxKind } from 'ts-morph';
@@ -11,12 +12,10 @@ export class Parser extends Effect.Service<Parser>()('@TSDataBuilders/Parser', {
   effect: Effect.gen(function* () {
     const fs = yield* FileSystem.FileSystem;
     const typeLiteralParser = yield* TypeLiteralParser;
+    const decorator = yield* Config.string('decorator');
 
     return {
-      generateBuildersMetadata: Effect.fnUntraced(function* (
-        path: string,
-        decorator: string,
-      ) {
+      generateBuildersMetadata: Effect.fnUntraced(function* (path: string) {
         const sourceCode = yield* fs.readFileString(path);
         const typeLiteralsWithDataBuilder = yield* Effect.try({
           try: () => {

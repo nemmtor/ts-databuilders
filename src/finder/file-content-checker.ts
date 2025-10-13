@@ -1,4 +1,5 @@
 import { FileSystem } from '@effect/platform';
+import * as Config from 'effect/Config';
 import * as Effect from 'effect/Effect';
 import * as Stream from 'effect/Stream';
 
@@ -8,9 +9,10 @@ export class FileContentChecker extends Effect.Service<FileContentChecker>()(
     effect: Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;
       const decoder = new TextDecoder();
+      const decorator = yield* Config.string('decorator');
 
       return {
-        check: Effect.fnUntraced(function* (filePath: string, term: string) {
+        check: Effect.fnUntraced(function* (filePath: string) {
           const fileContentStream = fs.stream(filePath, {
             chunkSize: 16 * 1024,
           });
@@ -19,8 +21,8 @@ export class FileContentChecker extends Effect.Service<FileContentChecker>()(
             Stream.mapAccum('', (leftover, chunk) => {
               const combined = leftover + chunk;
               return [
-                combined.slice(-term.length + 1),
-                combined.includes(term),
+                combined.slice(-decorator.length + 1),
+                combined.includes(decorator),
               ];
             }),
             Stream.find(Boolean),

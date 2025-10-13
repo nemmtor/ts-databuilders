@@ -1,4 +1,5 @@
 import * as Chunk from 'effect/Chunk';
+import * as Config from 'effect/Config';
 import * as Effect from 'effect/Effect';
 import * as Function from 'effect/Function';
 import * as Option from 'effect/Option';
@@ -8,18 +9,18 @@ import { FileContentChecker } from './file-content-checker';
 export class Finder extends Effect.Service<Finder>()('@TSDataBuilders/Finder', {
   effect: Effect.gen(function* () {
     const fileContentChecker = yield* FileContentChecker;
+    const include = yield* Config.string('include');
 
     return {
-      // TODO: these could done be via DI
-      find: Effect.fnUntraced(function* (term: string, glob: string) {
+      find: Effect.fnUntraced(function* () {
         const treeWalker = yield* TreeWalker;
-        const pathsStream = treeWalker.walk(glob);
+        const pathsStream = treeWalker.walk(include);
 
         const fileNamesWithContent = yield* pathsStream.pipe(
           Stream.mapEffect(
             (filePath) =>
               fileContentChecker
-                .check(filePath, term)
+                .check(filePath)
                 .pipe(
                   Effect.map(
                     Chunk.map((v) =>

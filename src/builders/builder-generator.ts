@@ -1,5 +1,6 @@
 import path from 'node:path';
 import * as FileSystem from '@effect/platform/FileSystem';
+import * as Config from 'effect/Config';
 import * as Effect from 'effect/Effect';
 import * as Match from 'effect/Match';
 import { Project } from 'ts-morph';
@@ -10,22 +11,24 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
   {
     effect: Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;
+      const outputDir = yield* Config.string('outputDir');
+      const fileSuffix = yield* Config.string('fileSuffix');
+      const builderSuffix = yield* Config.string('builderSuffix');
 
       return {
-        generateBaseBuilder: Effect.fnUntraced(function* (outputDir: string) {
+        generateBaseBuilder: Effect.fnUntraced(function* () {
           const baseBuilderPath = path.resolve(outputDir, 'data-builder.ts');
           yield* fs.writeFileString(baseBuilderPath, BASE_BUILDER_CONTENT);
         }),
         generateBuilder: Effect.fnUntraced(function* (
           builderMetadata: DataBuilderMetadata,
-          outputDir: string,
         ) {
           const project = new Project();
           const typeName = builderMetadata.name;
 
           const builderFilePath = path.resolve(
             outputDir,
-            `${typeName.toLowerCase()}.builder.ts`,
+            `${typeName.toLowerCase()}${fileSuffix}.ts`,
           );
 
           const file = project.createSourceFile(builderFilePath, '', {
@@ -86,7 +89,7 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
           );
 
           file.addClass({
-            name: `${typeName}Builder`,
+            name: `${typeName}${builderSuffix}`,
             isExported: true,
             extends: `DataBuilder<${typeName}>`,
             methods: [
