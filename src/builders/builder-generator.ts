@@ -3,7 +3,7 @@ import * as FileSystem from '@effect/platform/FileSystem';
 import * as Effect from 'effect/Effect';
 import * as Match from 'effect/Match';
 import { Project } from 'ts-morph';
-import type { DataBuilderMetadata, PropertySignatureMetadata } from '../parser';
+import type { DataBuilderMetadata, TypeNodeMetadata } from '../parser';
 
 export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
   '@TSDataBuilders/BuilderGenerator',
@@ -123,10 +123,8 @@ const BASE_BUILDER_CONTENT = `export abstract class DataBuilder<T> {
 }
 `;
 
-const getDefaultValueLiteral = (
-  propertySignatureMetadata: PropertySignatureMetadata,
-) => {
-  return Match.value(propertySignatureMetadata).pipe(
+const getDefaultValueLiteral = (typeNodeMetadata: TypeNodeMetadata): string => {
+  return Match.value(typeNodeMetadata).pipe(
     Match.withReturnType<string>(),
     Match.when({ kind: 'STRING' }, () => '""'),
     Match.when({ kind: 'NUMBER' }, () => '0'),
@@ -134,6 +132,33 @@ const getDefaultValueLiteral = (
     Match.when({ kind: 'UNDEFINED' }, () => 'undefined'),
     Match.when({ kind: 'NULL' }, () => 'null'),
     Match.when({ kind: 'DATE' }, () => 'new Date()'),
+    Match.when({ kind: 'UNION' }, (union) => {
+      const sortedMembers = union.members.slice().sort((a, b) => {
+        const priorityA = UNION_TYPE_PRIORITY.indexOf(a.kind);
+        const priorityB = UNION_TYPE_PRIORITY.indexOf(b.kind);
+
+        const indexA = priorityA === -1 ? Infinity : priorityA;
+        const indexB = priorityB === -1 ? Infinity : priorityB;
+
+        return indexA - indexB;
+      });
+
+      const targetTypeNode = sortedMembers[0];
+      if (!targetTypeNode) {
+        return 'never';
+      }
+
+      return getDefaultValueLiteral(targetTypeNode);
+    }),
     Match.exhaustive,
   );
 };
+
+const UNION_TYPE_PRIORITY: TypeNodeMetadata['kind'][] = [
+  'UNDEFINED',
+  'NULL',
+  'BOOLEAN',
+  'NUMBER',
+  'STRING',
+  'DATE',
+];

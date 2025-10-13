@@ -1,15 +1,12 @@
 import * as Effect from 'effect/Effect';
 import { SyntaxKind, type TypeLiteralNode } from 'ts-morph';
-import {
-  type PropertySignatureMetadata,
-  PropertySignatureParser,
-} from './property-signature-parser';
+import { type TypeNodeMetadata, TypeNodeParser } from './type-node-parser';
 
 export class TypeLiteralParser extends Effect.Service<TypeLiteralParser>()(
   '@TSDataBuilders/TypeLiteralParser',
   {
     effect: Effect.gen(function* () {
-      const propertySignatureParser = yield* PropertySignatureParser;
+      const typeNodeParser = yield* TypeNodeParser;
 
       return {
         generateMetadata: Effect.fnUntraced(function* (node: TypeLiteralNode) {
@@ -24,14 +21,21 @@ export class TypeLiteralParser extends Effect.Service<TypeLiteralParser>()(
                   return acc;
                 }
 
-                const propertySignatureName = member.getNameNode().getText();
+                const typeNode = member.getTypeNode();
+                if (!typeNode) {
+                  return acc;
+                }
+                const typeNodeName = member.getNameNode().getText();
 
-                const propertySignatureMetadata =
-                  yield* propertySignatureParser.generateMetadata(member);
+                const optional = member.hasQuestionToken();
+                const typeNodeMetadata = yield* typeNodeParser.generateMetadata(
+                  typeNode,
+                  optional,
+                );
 
                 return {
                   ...acc,
-                  [propertySignatureName]: propertySignatureMetadata,
+                  [typeNodeName]: typeNodeMetadata,
                 };
               }),
           );
@@ -40,8 +44,8 @@ export class TypeLiteralParser extends Effect.Service<TypeLiteralParser>()(
         }),
       };
     }),
-    dependencies: [PropertySignatureParser.Default],
+    dependencies: [TypeNodeParser.Default],
   },
 ) {}
 
-export type TypeLiteralMetadata = Record<string, PropertySignatureMetadata>;
+export type TypeLiteralMetadata = Record<string, TypeNodeMetadata>;

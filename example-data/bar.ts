@@ -9,4 +9,5 @@ export type Bar = {
   hello: undefined;
   bye?: string;
   what: null;
+  union: string | number | undefined | null | Date | boolean;
 };
