@@ -1,55 +1,54 @@
 import path from 'node:path';
 import * as FileSystem from '@effect/platform/FileSystem';
 import * as Effect from 'effect/Effect';
-import type { ParsedType } from '../parser';
-import { TypeScriptAST } from '../typescript-ast';
-import { getDefaultValueLiteral } from './get-default-value';
+import * as Match from 'effect/Match';
+import { Project } from 'ts-morph';
+import type { DataBuilderMetadata, PropertySignatureMetadata } from '../parser';
 
 export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
   '@TSDataBuilders/BuilderGenerator',
   {
     effect: Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;
-      const typeScriptAST = yield* TypeScriptAST;
 
       return {
         generateBaseBuilder: Effect.fnUntraced(function* (outputDir: string) {
           const baseBuilderPath = path.resolve(outputDir, 'data-builder.ts');
           yield* fs.writeFileString(baseBuilderPath, BASE_BUILDER_CONTENT);
         }),
-        generateBuilderFor: Effect.fnUntraced(function* (
-          parsedType: ParsedType,
+        generateBuilder: Effect.fnUntraced(function* (
+          builderMetadata: DataBuilderMetadata,
           outputDir: string,
         ) {
-          const typeName = parsedType.name;
+          const project = new Project();
+          const typeName = builderMetadata.name;
 
           const builderFilePath = path.resolve(
             outputDir,
             `${typeName.toLowerCase()}.builder.ts`,
           );
 
-          const file = yield* typeScriptAST.createSourceFile(
-            builderFilePath,
-            '',
-          );
+          const file = project.createSourceFile(builderFilePath, '', {
+            overwrite: true,
+          });
 
-          const originalFilePath = path.resolve(parsedType.path);
+          const originalFilePath = path.resolve(builderMetadata.path);
           const originalFileImportPath = path
             .relative(path.dirname(builderFilePath), originalFilePath)
             .replace(/\.ts$/, '');
 
-          yield* file.addImport({
-            name: typeName,
+          file.addImportDeclaration({
+            namedImports: [typeName],
             isTypeOnly: true,
-            path: originalFileImportPath,
+            moduleSpecifier: originalFileImportPath,
           });
 
-          yield* file.addImport({
-            name: 'DataBuilder',
-            path: './data-builder',
+          file.addImportDeclaration({
+            namedImports: ['DataBuilder'],
+            moduleSpecifier: './data-builder',
           });
 
-          const defaultEntries = Object.entries(parsedType.shape)
+          const defaultEntries = Object.entries(builderMetadata.shape)
             .filter(([_, { optional }]) => !optional)
             .map(([key, typePropertyShape]) => {
               const value = getDefaultValueLiteral(typePropertyShape);
@@ -58,7 +57,7 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
 
           const defaultObjectLiteral = `{\n  ${defaultEntries.join(',\n  ')}\n}`;
 
-          const builderMethods = Object.entries(parsedType.shape).map(
+          const builderMethods = Object.entries(builderMetadata.shape).map(
             ([fieldName, { optional }]) => {
               const methodName = `with${fieldName.charAt(0).toUpperCase()}${fieldName.slice(1)}`;
 
@@ -86,7 +85,7 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
             },
           );
 
-          yield* file.addClass({
+          file.addClass({
             name: `${typeName}Builder`,
             isExported: true,
             extends: `DataBuilder<${typeName}>`,
@@ -99,11 +98,10 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
             ],
           });
 
-          yield* file.save();
+          file.saveSync();
         }),
       };
     }),
-    dependencies: [TypeScriptAST.Default],
   },
 ) {}
 
@@ -124,3 +122,18 @@ const BASE_BUILDER_CONTENT = `export abstract class DataBuilder<T> {
   }
 }
 `;
+
+const getDefaultValueLiteral = (
+  propertySignatureMetadata: PropertySignatureMetadata,
+) => {
+  return Match.value(propertySignatureMetadata).pipe(
+    Match.withReturnType<string>(),
+    Match.when({ kind: 'STRING' }, () => '""'),
+    Match.when({ kind: 'NUMBER' }, () => '0'),
+    Match.when({ kind: 'BOOLEAN' }, () => 'false'),
+    Match.when({ kind: 'UNDEFINED' }, () => 'undefined'),
+    Match.when({ kind: 'NULL' }, () => 'null'),
+    Match.when({ kind: 'DATE' }, () => 'new Date()'),
+    Match.exhaustive,
+  );
+};

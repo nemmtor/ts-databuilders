@@ -3,9 +3,8 @@ import * as Effect from 'effect/Effect';
 import * as Function from 'effect/Function';
 import * as Option from 'effect/Option';
 import * as Stream from 'effect/Stream';
+import { TreeWalker } from '../tree-walker';
 import { FileContentChecker } from './file-content-checker';
-import { TreeWalker } from './tree-walker';
-
 export class Finder extends Effect.Service<Finder>()('@TSDataBuilders/Finder', {
   effect: Effect.gen(function* () {
     const fileContentChecker = yield* FileContentChecker;

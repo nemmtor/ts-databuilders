@@ -1,2 +1,2 @@
-export type { ParsedType } from './parser';
-export { Parser } from './parser';
+export { type DataBuilderMetadata, Parser } from './parser';
+export type { PropertySignatureMetadata } from './property-signature-parser';
