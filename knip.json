@@ -1,12 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "ignore": [
-    "example-data/**/*"
-  ],
-  "ignoreDependencies": [
-    "@effect/language-service"
-  ],
-  "ignoreBinaries": [
-    "tsc"
-  ]
+  "ignore": ["example-data/**/*"],
+  "ignoreDependencies": ["@effect/language-service"],
+  "ignoreBinaries": ["tsc"]
 }
