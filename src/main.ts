@@ -12,7 +12,7 @@ const BunTreeWalker = TreeWalker.of({
     const glob = new Glob(path);
     return Stream.fromAsyncIterable(
       glob.scan('.'),
-      (originalError) => new TreeWalkerError({ cause: originalError }),
+      (cause) => new TreeWalkerError({ cause }),
     );
   },
 });
