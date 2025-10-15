@@ -1,9 +1,9 @@
 import path from 'node:path';
 import * as FileSystem from '@effect/platform/FileSystem';
-import * as Config from 'effect/Config';
 import * as Effect from 'effect/Effect';
 import * as Match from 'effect/Match';
 import { Project } from 'ts-morph';
+import { Configuration } from '../configuration';
 import type { DataBuilderMetadata, TypeNodeMetadata } from '../parser';
 
 export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
@@ -11,9 +11,7 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
   {
     effect: Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;
-      const outputDir = yield* Config.string('outputDir');
-      const fileSuffix = yield* Config.string('fileSuffix');
-      const builderSuffix = yield* Config.string('builderSuffix');
+      const { outputDir, fileSuffix, builderSuffix } = yield* Configuration;
 
       return {
         generateBaseBuilder: Effect.fnUntraced(function* () {

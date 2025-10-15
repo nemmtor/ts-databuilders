@@ -1,7 +1,7 @@
 import { FileSystem } from '@effect/platform';
-import * as Config from 'effect/Config';
 import * as Effect from 'effect/Effect';
 import * as Stream from 'effect/Stream';
+import { Configuration } from '../configuration';
 
 export class FileContentChecker extends Effect.Service<FileContentChecker>()(
   '@TSDataBuilders/FileContentChecker',
@@ -9,7 +9,7 @@ export class FileContentChecker extends Effect.Service<FileContentChecker>()(
     effect: Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;
       const decoder = new TextDecoder();
-      const decorator = yield* Config.string('decorator');
+      const { decorator } = yield* Configuration;
 
       return {
         check: Effect.fnUntraced(function* (filePath: string) {

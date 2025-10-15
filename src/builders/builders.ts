@@ -1,6 +1,6 @@
 import * as FileSystem from '@effect/platform/FileSystem';
-import * as Config from 'effect/Config';
 import * as Effect from 'effect/Effect';
+import { Configuration } from '../configuration';
 import type { DataBuilderMetadata } from '../parser';
 import { BuilderGenerator } from './builder-generator';
 
@@ -10,7 +10,7 @@ export class Builders extends Effect.Service<Builders>()(
     effect: Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;
       const builderGenerator = yield* BuilderGenerator;
-      const outputDir = yield* Config.string('outputDir');
+      const { outputDir } = yield* Configuration;
 
       return {
         create: Effect.fnUntraced(function* (metadata: DataBuilderMetadata[]) {

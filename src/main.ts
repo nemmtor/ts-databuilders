@@ -4,9 +4,10 @@ import { Glob } from 'bun';
 import { Effect } from 'effect';
 import * as Layer from 'effect/Layer';
 import * as Stream from 'effect/Stream';
-import { cli } from './command';
+import { cli } from './cli';
 import { TreeWalker, TreeWalkerError } from './tree-walker';
 
+// TODO: is this really needed?
 const BunTreeWalker = TreeWalker.of({
   walk: (path) => {
     const glob = new Glob(path);

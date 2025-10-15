@@ -1,15 +1,15 @@
 import * as Chunk from 'effect/Chunk';
-import * as Config from 'effect/Config';
 import * as Effect from 'effect/Effect';
 import * as Function from 'effect/Function';
 import * as Option from 'effect/Option';
 import * as Stream from 'effect/Stream';
+import { Configuration } from '../configuration';
 import { TreeWalker } from '../tree-walker';
 import { FileContentChecker } from './file-content-checker';
 export class Finder extends Effect.Service<Finder>()('@TSDataBuilders/Finder', {
   effect: Effect.gen(function* () {
     const fileContentChecker = yield* FileContentChecker;
-    const include = yield* Config.string('include');
+    const { include } = yield* Configuration;
 
     return {
       find: Effect.fnUntraced(function* () {

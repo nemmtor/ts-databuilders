@@ -1,7 +1,8 @@
 import * as Options from '@effect/cli/Options';
+import * as HashMap from 'effect/HashMap';
 import * as Schema from 'effect/Schema';
 
-// TODO: options for: default values, type union priorities
+// TODO: options for: type union priorities
 // TODO: schema validation
 const decorator = Options.text('decorator').pipe(
   Options.withAlias('d'),
@@ -40,7 +41,26 @@ const builderSuffix = Options.text('builder-suffix').pipe(
   Options.withDefault('Builder'),
 );
 
-export const commandOptions = {
+export const DEFAULT_CONFIGURABLE_DEFAULTS = HashMap.fromIterable([
+  ['string', '""'],
+  ['number', '0'],
+  ['boolean', 'false'],
+] as const);
+
+const defaults = Options.keyValueMap('defaults').pipe(
+  Options.withDescription(
+    'Default values to be used in data builder constructor.',
+  ),
+  Options.withSchema(
+    Schema.HashMapFromSelf({
+      key: Schema.Literal('string', 'number', 'boolean'),
+      value: Schema.NumberFromString,
+    }),
+  ),
+  Options.withDefault(DEFAULT_CONFIGURABLE_DEFAULTS),
+);
+
+export const options = {
   decorator,
   outputDir,
   include,
