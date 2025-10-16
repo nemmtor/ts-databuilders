@@ -56,6 +56,32 @@ const generateTypeNodeMetadata = Effect.fnUntraced(function* (
         typeNode
           .asKindOrThrow(SyntaxKind.LiteralType)
           .getLiteral()
+          .getKind() === SyntaxKind.FalseKeyword,
+      () =>
+        Effect.succeed({
+          kind: 'FALSE',
+          optional,
+        }),
+    ),
+    Match.when(
+      (kind) =>
+        kind === SyntaxKind.LiteralType &&
+        typeNode
+          .asKindOrThrow(SyntaxKind.LiteralType)
+          .getLiteral()
+          .getKind() === SyntaxKind.TrueKeyword,
+      () =>
+        Effect.succeed({
+          kind: 'TRUE',
+          optional,
+        }),
+    ),
+    Match.when(
+      (kind) =>
+        kind === SyntaxKind.LiteralType &&
+        typeNode
+          .asKindOrThrow(SyntaxKind.LiteralType)
+          .getLiteral()
           .getKind() === SyntaxKind.NullKeyword,
       () =>
         Effect.succeed({
@@ -109,21 +135,18 @@ class UnsupportedSyntaxKind extends Data.TaggedError('UnsupportedSyntaxKind')<{
 export type TypeNodeMetadata =
   | {
       optional: boolean;
-      kind: Extract<
-        PropertyType,
-        'BOOLEAN' | 'STRING' | 'NUMBER' | 'DATE' | 'UNDEFINED' | 'NULL'
-      >;
+      kind:
+        | 'STRING'
+        | 'NUMBER'
+        | 'BOOLEAN'
+        | 'DATE'
+        | 'UNDEFINED'
+        | 'FALSE'
+        | 'TRUE'
+        | 'NULL';
     }
   | {
       optional: boolean;
-      kind: Extract<PropertyType, 'UNION'>;
-      members: TypeNodeMetadata[]; // TODO: normal type
+      kind: 'UNION';
+      members: TypeNodeMetadata[];
     };
-type PropertyType =
-  | 'STRING'
-  | 'NUMBER'
-  | 'BOOLEAN'
-  | 'DATE'
-  | 'UNDEFINED'
-  | 'NULL'
-  | 'UNION';

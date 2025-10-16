@@ -1,7 +1,9 @@
 import path from 'node:path';
 import * as FileSystem from '@effect/platform/FileSystem';
 import * as Effect from 'effect/Effect';
+import * as HashMap from 'effect/HashMap';
 import * as Match from 'effect/Match';
+import * as Option from 'effect/Option';
 import { Project } from 'ts-morph';
 import { Configuration } from '../configuration';
 import type { DataBuilderMetadata, TypeNodeMetadata } from '../parser';
@@ -49,12 +51,17 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
             moduleSpecifier: './data-builder',
           });
 
-          const defaultEntries = Object.entries(builderMetadata.shape)
-            .filter(([_, { optional }]) => !optional)
-            .map(([key, typePropertyShape]) => {
-              const value = getDefaultValueLiteral(typePropertyShape);
-              return `${key}: ${value}`;
-            });
+          const defaultEntries = yield* Effect.all(
+            Object.entries(builderMetadata.shape)
+              .filter(([_, { optional }]) => !optional)
+              .map(([key, typePropertyShape]) =>
+                Effect.gen(function* () {
+                  const value =
+                    yield* getDefaultValueLiteral(typePropertyShape);
+                  return `${key}: ${value}`;
+                }),
+              ),
+          );
 
           const defaultObjectLiteral = `{\n  ${defaultEntries.join(',\n  ')}\n}`;
 
@@ -124,41 +131,73 @@ const BASE_BUILDER_CONTENT = `export abstract class DataBuilder<T> {
 }
 `;
 
-const getDefaultValueLiteral = (typeNodeMetadata: TypeNodeMetadata): string => {
-  return Match.value(typeNodeMetadata).pipe(
-    Match.withReturnType<string>(),
-    Match.when({ kind: 'STRING' }, () => '""'),
-    Match.when({ kind: 'NUMBER' }, () => '0'),
-    Match.when({ kind: 'BOOLEAN' }, () => 'false'),
-    Match.when({ kind: 'UNDEFINED' }, () => 'undefined'),
-    Match.when({ kind: 'NULL' }, () => 'null'),
-    Match.when({ kind: 'DATE' }, () => 'new Date()'),
-    Match.when({ kind: 'UNION' }, (union) => {
-      const sortedMembers = union.members.slice().sort((a, b) => {
-        const priorityA = UNION_TYPE_PRIORITY.indexOf(a.kind);
-        const priorityB = UNION_TYPE_PRIORITY.indexOf(b.kind);
+const getDefaultValueLiteral = (
+  typeNodeMetadata: TypeNodeMetadata,
+): Effect.Effect<string, never, Configuration> =>
+  Effect.gen(function* () {
+    const { defaults } = yield* Configuration;
 
-        const indexA = priorityA === -1 ? Infinity : priorityA;
-        const indexB = priorityB === -1 ? Infinity : priorityB;
+    const result = Match.value(typeNodeMetadata).pipe(
+      Match.when({ kind: 'STRING' }, () =>
+        Effect.succeed(
+          defaults.pipe(
+            HashMap.get('string'),
+            Option.getOrElse(() => '""'),
+          ),
+        ),
+      ),
+      Match.when({ kind: 'NUMBER' }, () =>
+        Effect.succeed(
+          defaults.pipe(
+            HashMap.get('number'),
+            Option.getOrElse(() => '0'),
+          ),
+        ),
+      ),
+      Match.when({ kind: 'BOOLEAN' }, () =>
+        Effect.succeed(
+          defaults.pipe(
+            HashMap.get('boolean'),
+            Option.getOrElse(() => 'false'),
+          ),
+        ),
+      ),
+      Match.when({ kind: 'UNDEFINED' }, () => Effect.succeed('undefined')),
+      Match.when({ kind: 'NULL' }, () => Effect.succeed('null')),
+      Match.when({ kind: 'DATE' }, () => Effect.succeed('new Date()')),
+      Match.when({ kind: 'FALSE' }, () => Effect.succeed('false')),
+      Match.when({ kind: 'TRUE' }, () => Effect.succeed('true')),
+      Match.when({ kind: 'UNION' }, (union) =>
+        Effect.gen(function* () {
+          const sortedMembers = union.members.slice().sort((a, b) => {
+            const priorityA = UNION_TYPE_PRIORITY.indexOf(a.kind);
+            const priorityB = UNION_TYPE_PRIORITY.indexOf(b.kind);
 
-        return indexA - indexB;
-      });
+            const indexA = priorityA === -1 ? Infinity : priorityA;
+            const indexB = priorityB === -1 ? Infinity : priorityB;
 
-      const targetTypeNode = sortedMembers[0];
-      if (!targetTypeNode) {
-        return 'never';
-      }
+            return indexA - indexB;
+          });
 
-      return getDefaultValueLiteral(targetTypeNode);
-    }),
-    Match.exhaustive,
-  );
-};
+          const targetTypeNode = sortedMembers[0];
+          if (!targetTypeNode) {
+            return 'never';
+          }
+          return yield* getDefaultValueLiteral(targetTypeNode);
+        }),
+      ),
+      Match.exhaustive,
+    );
+
+    return yield* result;
+  });
 
 const UNION_TYPE_PRIORITY: TypeNodeMetadata['kind'][] = [
   'UNDEFINED',
   'NULL',
   'BOOLEAN',
+  'FALSE',
+  'TRUE',
   'NUMBER',
   'STRING',
   'DATE',

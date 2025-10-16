@@ -2,12 +2,14 @@
  * @DataBuilder
  */
 export type Bar = {
-  fooz: string;
-  age: number;
-  isReal: boolean;
-  createdAt: Date;
-  hello: undefined;
-  bye?: string;
-  what: null;
-  union: string | number | undefined | null | Date | boolean;
+  str: string;
+  num: number;
+  bool: boolean;
+  date: Date;
+  undef: undefined;
+  maybeString?: string;
+  nullz: null;
+  unionz: string | number | undefined | null | Date | boolean | false | true;
+  falz: false;
+  truz: true;
 };

@@ -41,22 +41,25 @@ const builderSuffix = Options.text('builder-suffix').pipe(
   Options.withDefault('Builder'),
 );
 
-export const DEFAULT_CONFIGURABLE_DEFAULTS = HashMap.fromIterable([
-  ['string', '""'],
-  ['number', '0'],
-  ['boolean', 'false'],
-] as const);
+const defaultsHashMapSchema = Schema.HashMapFromSelf({
+  key: Schema.Literal('string', 'number', 'boolean'),
+  value: Schema.String,
+});
+
+// TODO: better schema
+const DEFAULT_CONFIGURABLE_DEFAULTS = Schema.decodeSync(defaultsHashMapSchema)(
+  HashMap.fromIterable([
+    ['string', '""'],
+    ['number', '0'],
+    ['boolean', 'false'],
+  ]),
+);
 
 const defaults = Options.keyValueMap('defaults').pipe(
   Options.withDescription(
     'Default values to be used in data builder constructor.',
   ),
-  Options.withSchema(
-    Schema.HashMapFromSelf({
-      key: Schema.Literal('string', 'number', 'boolean'),
-      value: Schema.NumberFromString,
-    }),
-  ),
+  Options.withSchema(defaultsHashMapSchema),
   Options.withDefault(DEFAULT_CONFIGURABLE_DEFAULTS),
 );
 
@@ -66,4 +69,5 @@ export const options = {
   include,
   fileSuffix,
   builderSuffix,
+  defaults,
 };
