@@ -8,8 +8,10 @@ export type Bar = {
   date: Date;
   undef: undefined;
   maybeString?: string;
-  nullz: null;
   unionz: string | number | undefined | null | Date | boolean | false | true;
-  falz: false;
-  truz: true;
+  nullzLiteral: null;
+  falzLiteral: false;
+  truzLiteral: true;
+  numLiteral: 1;
+  strLiteral: 'asd';
 };

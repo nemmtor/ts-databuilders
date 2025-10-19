@@ -145,10 +145,10 @@ const getDefaultValueLiteral = (
         Effect.succeed(`${defaults.boolean}`),
       ),
       Match.when({ kind: 'UNDEFINED' }, () => Effect.succeed('undefined')),
-      Match.when({ kind: 'NULL' }, () => Effect.succeed('null')),
       Match.when({ kind: 'DATE' }, () => Effect.succeed('new Date()')),
-      Match.when({ kind: 'FALSE' }, () => Effect.succeed('false')),
-      Match.when({ kind: 'TRUE' }, () => Effect.succeed('true')),
+      Match.when({ kind: 'LITERAL' }, (v) =>
+        Effect.succeed(`${v.literalValue}`),
+      ),
       Match.when({ kind: 'UNION' }, (union) =>
         Effect.gen(function* () {
           const sortedMembers = union.members.slice().sort((a, b) => {
@@ -176,11 +176,9 @@ const getDefaultValueLiteral = (
 
 const UNION_TYPE_PRIORITY: TypeNodeMetadata['kind'][] = [
   'UNDEFINED',
-  'NULL',
   'BOOLEAN',
-  'FALSE',
-  'TRUE',
   'NUMBER',
   'STRING',
   'DATE',
+  'LITERAL',
 ];

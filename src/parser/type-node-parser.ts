@@ -51,41 +51,14 @@ const generateTypeNodeMetadata = Effect.fnUntraced(function* (
         }),
     ),
     Match.when(
-      (kind) =>
-        kind === SyntaxKind.LiteralType &&
-        typeNode
-          .asKindOrThrow(SyntaxKind.LiteralType)
-          .getLiteral()
-          .getKind() === SyntaxKind.FalseKeyword,
+      (kind) => kind === SyntaxKind.LiteralType,
       () =>
         Effect.succeed({
-          kind: 'FALSE',
-          optional,
-        }),
-    ),
-    Match.when(
-      (kind) =>
-        kind === SyntaxKind.LiteralType &&
-        typeNode
-          .asKindOrThrow(SyntaxKind.LiteralType)
-          .getLiteral()
-          .getKind() === SyntaxKind.TrueKeyword,
-      () =>
-        Effect.succeed({
-          kind: 'TRUE',
-          optional,
-        }),
-    ),
-    Match.when(
-      (kind) =>
-        kind === SyntaxKind.LiteralType &&
-        typeNode
-          .asKindOrThrow(SyntaxKind.LiteralType)
-          .getLiteral()
-          .getKind() === SyntaxKind.NullKeyword,
-      () =>
-        Effect.succeed({
-          kind: 'NULL',
+          kind: 'LITERAL',
+          literalValue: typeNode
+            .asKindOrThrow(SyntaxKind.LiteralType)
+            .getLiteral()
+            .getText(),
           optional,
         }),
     ),
@@ -135,18 +108,15 @@ class UnsupportedSyntaxKind extends Data.TaggedError('UnsupportedSyntaxKind')<{
 export type TypeNodeMetadata =
   | {
       optional: boolean;
-      kind:
-        | 'STRING'
-        | 'NUMBER'
-        | 'BOOLEAN'
-        | 'DATE'
-        | 'UNDEFINED'
-        | 'FALSE'
-        | 'TRUE'
-        | 'NULL';
+      kind: 'STRING' | 'NUMBER' | 'BOOLEAN' | 'DATE' | 'UNDEFINED';
     }
   | {
       optional: boolean;
       kind: 'UNION';
       members: TypeNodeMetadata[];
+    }
+  | {
+      optional: boolean;
+      kind: 'LITERAL';
+      literalValue: string;
     };
