@@ -63,6 +63,46 @@ const generateTypeNodeMetadata = Effect.fnUntraced(function* (
         }),
     ),
     Match.when(
+      (kind) => kind === SyntaxKind.TypeLiteral,
+      (): Effect.Effect<TypeNodeMetadata, UnsupportedSyntaxKind> =>
+        Effect.gen(function* () {
+          const node = typeNode.asKindOrThrow(SyntaxKind.TypeLiteral);
+          const members = node.getMembers();
+
+          const metadata: Record<string, TypeNodeMetadata> =
+            yield* Effect.reduce(members, {}, (acc, member) =>
+              Effect.gen(function* () {
+                if (!member.isKind(SyntaxKind.PropertySignature)) {
+                  return acc;
+                }
+
+                const typeNode = member.getTypeNode();
+                if (!typeNode) {
+                  return acc;
+                }
+                const typeNodeName = member.getNameNode().getText();
+
+                const optional = member.hasQuestionToken();
+                const typeNodeMetadata = yield* generateTypeNodeMetadata(
+                  typeNode,
+                  optional,
+                );
+
+                return {
+                  ...acc,
+                  [typeNodeName]: typeNodeMetadata,
+                };
+              }),
+            );
+
+          return {
+            kind: 'TYPE_LITERAL',
+            metadata,
+            optional,
+          };
+        }),
+    ),
+    Match.when(
       Match.is(SyntaxKind.UnionType),
       (): Effect.Effect<TypeNodeMetadata, UnsupportedSyntaxKind> =>
         Effect.gen(function* () {
@@ -119,4 +159,9 @@ export type TypeNodeMetadata =
       optional: boolean;
       kind: 'LITERAL';
       literalValue: string;
+    }
+  | {
+      optional: boolean;
+      kind: 'TYPE_LITERAL';
+      metadata: Record<string, TypeNodeMetadata>;
     };

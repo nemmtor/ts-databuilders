@@ -130,25 +130,36 @@ const BASE_BUILDER_CONTENT = `export abstract class DataBuilder<T> {
 
 const getDefaultValueLiteral = (
   typeNodeMetadata: TypeNodeMetadata,
-): Effect.Effect<string, never, Configuration> =>
+): Effect.Effect<string | number | boolean, never, Configuration> =>
   Effect.gen(function* () {
     const { defaults } = yield* Configuration;
 
     const result = Match.value(typeNodeMetadata).pipe(
       Match.when({ kind: 'STRING' }, () =>
-        Effect.succeed(`'${defaults.string}'`),
+        Effect.succeed(`"${defaults.string}"`),
       ),
-      Match.when({ kind: 'NUMBER' }, () =>
-        Effect.succeed(`${defaults.number}`),
-      ),
-      Match.when({ kind: 'BOOLEAN' }, () =>
-        Effect.succeed(`${defaults.boolean}`),
-      ),
+      Match.when({ kind: 'NUMBER' }, () => Effect.succeed(defaults.number)),
+      Match.when({ kind: 'BOOLEAN' }, () => Effect.succeed(defaults.boolean)),
       Match.when({ kind: 'UNDEFINED' }, () => Effect.succeed('undefined')),
       Match.when({ kind: 'DATE' }, () => Effect.succeed('new Date()')),
-      Match.when({ kind: 'LITERAL' }, (v) =>
-        Effect.succeed(`${v.literalValue}`),
+      Match.when({ kind: 'LITERAL' }, (v) => Effect.succeed(v.literalValue)),
+      Match.when({ kind: 'TYPE_LITERAL' }, (v) =>
+        Effect.gen(function* () {
+          const entries = yield* Effect.all(
+            Object.entries(v.metadata)
+              .filter(([_, { optional }]) => !optional)
+              .map(([key, typePropertyShape]) =>
+                Effect.gen(function* () {
+                  const value =
+                    yield* getDefaultValueLiteral(typePropertyShape);
+                  return `${key}: ${value}`;
+                }),
+              ),
+          );
+          return `{${entries.join(', ')}}`;
+        }),
       ),
+
       Match.when({ kind: 'UNION' }, (union) =>
         Effect.gen(function* () {
           const sortedMembers = union.members.slice().sort((a, b) => {
@@ -181,4 +192,5 @@ const UNION_TYPE_PRIORITY: TypeNodeMetadata['kind'][] = [
   'STRING',
   'DATE',
   'LITERAL',
+  'TYPE_LITERAL',
 ];
