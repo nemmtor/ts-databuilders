@@ -1,6 +1,8 @@
 import * as Options from '@effect/cli/Options';
 import * as HashMap from 'effect/HashMap';
+import * as Option from 'effect/Option';
 import * as Schema from 'effect/Schema';
+import { DEFAULT_CONFIGURABLE_DEFAULTS, defaultsSchema } from './configuration';
 
 // TODO: options for: type union priorities
 // TODO: schema validation
@@ -41,25 +43,43 @@ const builderSuffix = Options.text('builder-suffix').pipe(
   Options.withDefault('Builder'),
 );
 
-const defaultsHashMapSchema = Schema.HashMapFromSelf({
-  key: Schema.Literal('string', 'number', 'boolean'),
-  value: Schema.String,
-});
-
-// TODO: better schema
-const DEFAULT_CONFIGURABLE_DEFAULTS = Schema.decodeSync(defaultsHashMapSchema)(
-  HashMap.fromIterable([
-    ['string', '""'],
-    ['number', '0'],
-    ['boolean', 'false'],
-  ]),
-);
-
 const defaults = Options.keyValueMap('defaults').pipe(
   Options.withDescription(
     'Default values to be used in data builder constructor.',
   ),
-  Options.withSchema(defaultsHashMapSchema),
+  Options.withSchema(
+    Schema.HashMapFromSelf({
+      key: Schema.Literal('string', 'number', 'boolean'),
+      value: Schema.String,
+    }).pipe(
+      Schema.transform(defaultsSchema, {
+        decode: (v) => {
+          return {
+            string: v.pipe(
+              HashMap.get('string'),
+              Option.getOrElse(() => ''),
+            ),
+            number: v.pipe(
+              HashMap.get('number'),
+              Option.getOrElse(() => '0'),
+            ),
+            boolean: v.pipe(
+              HashMap.get('boolean'),
+              Option.getOrElse(() => 'false'),
+            ),
+          };
+        },
+        encode: (v) => {
+          return HashMap.make(
+            ['string' as const, v.string],
+            ['number' as const, v.number],
+            ['boolean' as const, v.boolean],
+          );
+        },
+        strict: false,
+      }),
+    ),
+  ),
   Options.withDefault(DEFAULT_CONFIGURABLE_DEFAULTS),
 );
 

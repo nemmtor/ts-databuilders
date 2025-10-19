@@ -1,5 +1,19 @@
 import * as Context from 'effect/Context';
-import type { HashMap } from 'effect/HashMap';
+import * as Schema from 'effect/Schema';
+
+export const DEFAULT_CONFIGURABLE_DEFAULTS = {
+  string: '',
+  number: 0,
+  boolean: false,
+};
+
+export const defaultsSchema = Schema.Struct({
+  string: Schema.String,
+  number: Schema.NumberFromString,
+  boolean: Schema.BooleanFromString,
+});
+
+type DefaultsShape = (typeof defaultsSchema)['Type'];
 
 export interface ConfigurationShape {
   readonly decorator: string;
@@ -7,7 +21,7 @@ export interface ConfigurationShape {
   readonly include: string;
   readonly fileSuffix: string;
   readonly builderSuffix: string;
-  readonly defaults: HashMap<'string' | 'number' | 'boolean', string>;
+  readonly defaults: DefaultsShape;
 }
 
 export class Configuration extends Context.Tag('Configuration')<

@@ -1,9 +1,7 @@
 import path from 'node:path';
 import * as FileSystem from '@effect/platform/FileSystem';
 import * as Effect from 'effect/Effect';
-import * as HashMap from 'effect/HashMap';
 import * as Match from 'effect/Match';
-import * as Option from 'effect/Option';
 import { Project } from 'ts-morph';
 import { Configuration } from '../configuration';
 import type { DataBuilderMetadata, TypeNodeMetadata } from '../parser';
@@ -63,8 +61,6 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
               ),
           );
 
-          const defaultObjectLiteral = `{\n  ${defaultEntries.join(',\n  ')}\n}`;
-
           const builderMethods = Object.entries(builderMetadata.shape).map(
             ([fieldName, { optional }]) => {
               const methodName = `with${fieldName.charAt(0).toUpperCase()}${fieldName.slice(1)}`;
@@ -93,6 +89,7 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
             },
           );
 
+          const defaultObjectLiteral = `{\n  ${defaultEntries.join(',\n  ')}\n}`;
           file.addClass({
             name: `${typeName}${builderSuffix}`,
             isExported: true,
@@ -139,28 +136,13 @@ const getDefaultValueLiteral = (
 
     const result = Match.value(typeNodeMetadata).pipe(
       Match.when({ kind: 'STRING' }, () =>
-        Effect.succeed(
-          defaults.pipe(
-            HashMap.get('string'),
-            Option.getOrElse(() => '""'),
-          ),
-        ),
+        Effect.succeed(`'${defaults.string}'`),
       ),
       Match.when({ kind: 'NUMBER' }, () =>
-        Effect.succeed(
-          defaults.pipe(
-            HashMap.get('number'),
-            Option.getOrElse(() => '0'),
-          ),
-        ),
+        Effect.succeed(`${defaults.number}`),
       ),
       Match.when({ kind: 'BOOLEAN' }, () =>
-        Effect.succeed(
-          defaults.pipe(
-            HashMap.get('boolean'),
-            Option.getOrElse(() => 'false'),
-          ),
-        ),
+        Effect.succeed(`${defaults.boolean}`),
       ),
       Match.when({ kind: 'UNDEFINED' }, () => Effect.succeed('undefined')),
       Match.when({ kind: 'NULL' }, () => Effect.succeed('null')),
