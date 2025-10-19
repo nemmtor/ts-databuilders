@@ -15,7 +15,7 @@ export const defaultsSchema = Schema.Struct({
 
 type DefaultsShape = (typeof defaultsSchema)['Type'];
 
-export interface ConfigurationShape {
+interface ConfigurationShape {
   readonly decorator: string;
   readonly outputDir: string;
   readonly include: string;
