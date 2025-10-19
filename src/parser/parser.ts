@@ -3,15 +3,12 @@ import * as Data from 'effect/Data';
 import * as Effect from 'effect/Effect';
 import { Project, SyntaxKind } from 'ts-morph';
 import { Configuration } from '../configuration';
-import {
-  type TypeLiteralMetadata,
-  TypeLiteralParser,
-} from './type-literal-parser';
+import { type TypeNodeMetadata, TypeNodeParser } from './type-node-parser';
 
 export class Parser extends Effect.Service<Parser>()('@TSDataBuilders/Parser', {
   effect: Effect.gen(function* () {
     const fs = yield* FileSystem.FileSystem;
-    const typeLiteralParser = yield* TypeLiteralParser;
+    const typeNodeParser = yield* TypeNodeParser;
     const { decorator } = yield* Configuration;
 
     return {
@@ -59,8 +56,8 @@ export class Parser extends Effect.Service<Parser>()('@TSDataBuilders/Parser', {
 
         const result: DataBuilderMetadata[] = yield* Effect.all(
           typeLiteralsWithDataBuilder.map(({ name, node }) =>
-            typeLiteralParser
-              .generateMetadata(node)
+            typeNodeParser
+              .generateMetadata(node, false)
               .pipe(Effect.map((shape) => ({ name, shape, path }))),
           ),
         );
@@ -69,7 +66,7 @@ export class Parser extends Effect.Service<Parser>()('@TSDataBuilders/Parser', {
       }),
     };
   }),
-  dependencies: [TypeLiteralParser.Default],
+  dependencies: [TypeNodeParser.Default],
 }) {}
 
 class ParserError extends Data.TaggedError('ParserError')<{
@@ -78,6 +75,6 @@ class ParserError extends Data.TaggedError('ParserError')<{
 
 export type DataBuilderMetadata = {
   name: string;
-  shape: TypeLiteralMetadata;
+  shape: TypeNodeMetadata;
   path: string;
 };

@@ -49,8 +49,14 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
             moduleSpecifier: './data-builder',
           });
 
+          if (builderMetadata.shape.kind !== 'TYPE_LITERAL') {
+            return yield* Effect.dieMessage(
+              'Expected root type to be type literal',
+            );
+          }
+
           const defaultEntries = yield* Effect.all(
-            Object.entries(builderMetadata.shape)
+            Object.entries(builderMetadata.shape.metadata)
               .filter(([_, { optional }]) => !optional)
               .map(([key, typePropertyShape]) =>
                 Effect.gen(function* () {
@@ -61,33 +67,33 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
               ),
           );
 
-          const builderMethods = Object.entries(builderMetadata.shape).map(
-            ([fieldName, { optional }]) => {
-              const methodName = `with${fieldName.charAt(0).toUpperCase()}${fieldName.slice(1)}`;
+          const builderMethods = Object.entries(
+            builderMetadata.shape.metadata,
+          ).map(([fieldName, { optional }]) => {
+            const methodName = `with${fieldName.charAt(0).toUpperCase()}${fieldName.slice(1)}`;
 
-              const statements = optional
-                ? [
-                    `if (!${fieldName}) {`,
-                    `  const { ${fieldName}: _${fieldName}, ...rest } = this.build();`,
-                    `  return this.with(rest);`,
-                    `}`,
-                    `return this.with({ ${fieldName} });`,
-                  ]
-                : [`return this.with({ ${fieldName} });`];
+            const statements = optional
+              ? [
+                  `if (!${fieldName}) {`,
+                  `  const { ${fieldName}: _${fieldName}, ...rest } = this.build();`,
+                  `  return this.with(rest);`,
+                  `}`,
+                  `return this.with({ ${fieldName} });`,
+                ]
+              : [`return this.with({ ${fieldName} });`];
 
-              return {
-                name: methodName,
-                isPublic: true,
-                parameters: [
-                  {
-                    name: fieldName,
-                    type: `${typeName}['${fieldName}']`,
-                  },
-                ],
-                statements: statements,
-              };
-            },
-          );
+            return {
+              name: methodName,
+              isPublic: true,
+              parameters: [
+                {
+                  name: fieldName,
+                  type: `${typeName}['${fieldName}']`,
+                },
+              ],
+              statements: statements,
+            };
+          });
 
           const defaultObjectLiteral = `{\n  ${defaultEntries.join(',\n  ')}\n}`;
           file.addClass({
@@ -145,7 +151,14 @@ const getDefaultValueLiteral = (
       Match.when({ kind: 'ARRAY' }, () => Effect.succeed('[]')),
       Match.when({ kind: 'LITERAL' }, (v) => Effect.succeed(v.literalValue)),
       Match.when({ kind: 'TUPLE' }, (v) =>
-        Effect.succeed('"TODO: handle tuple"'),
+        Effect.gen(function* () {
+          const types = yield* Effect.all(
+            v.members.map((typePropertyShape) =>
+              getDefaultValueLiteral(typePropertyShape),
+            ),
+          );
+          return `[${types.map((type) => `${type}`).join(', ')}]`;
+        }),
       ),
       Match.when({ kind: 'TYPE_LITERAL' }, (v) =>
         Effect.gen(function* () {

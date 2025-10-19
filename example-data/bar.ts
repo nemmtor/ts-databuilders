@@ -26,7 +26,7 @@ export type Bar = {
     | number
     | true
   )[];
-  tuple: [string, number];
+  tuple: [string, number, 'xd', 1];
   obj: {
     str: string;
     num: number;
