@@ -14,6 +14,18 @@ export type Bar = {
   truzLiteral: true;
   numLiteral: 1;
   strLiteral: 'asd';
+  arr: string[];
+  arrUnion: (
+    | {
+        foo: number;
+        bar: string;
+        baz: boolean;
+        opt?: string;
+      }
+    | string
+    | number
+    | true
+  )[];
   obj: {
     str: string;
     num: number;
@@ -27,6 +39,18 @@ export type Bar = {
     truzLiteral: true;
     numLiteral: 1;
     strLiteral: 'asd';
+    arr: string[];
+    arrUnion: (
+      | {
+          foo: number;
+          bar: string;
+          baz: boolean;
+          opt?: string;
+        }
+      | string
+      | number
+      | true
+    )[];
     obj: {
       foo: number;
       bar: string;

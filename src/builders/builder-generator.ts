@@ -142,6 +142,7 @@ const getDefaultValueLiteral = (
       Match.when({ kind: 'BOOLEAN' }, () => Effect.succeed(defaults.boolean)),
       Match.when({ kind: 'UNDEFINED' }, () => Effect.succeed('undefined')),
       Match.when({ kind: 'DATE' }, () => Effect.succeed('new Date()')),
+      Match.when({ kind: 'ARRAY' }, () => Effect.succeed('[]')),
       Match.when({ kind: 'LITERAL' }, (v) => Effect.succeed(v.literalValue)),
       Match.when({ kind: 'TYPE_LITERAL' }, (v) =>
         Effect.gen(function* () {
@@ -193,4 +194,5 @@ const UNION_TYPE_PRIORITY: TypeNodeMetadata['kind'][] = [
   'DATE',
   'LITERAL',
   'TYPE_LITERAL',
+  'ARRAY',
 ];

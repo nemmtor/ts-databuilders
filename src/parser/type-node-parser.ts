@@ -51,6 +51,15 @@ const generateTypeNodeMetadata = Effect.fnUntraced(function* (
         }),
     ),
     Match.when(
+      (kind) => kind === SyntaxKind.ArrayType,
+      () =>
+        Effect.succeed({
+          kind: 'ARRAY',
+          optional,
+        }),
+    ),
+
+    Match.when(
       (kind) => kind === SyntaxKind.LiteralType,
       () =>
         Effect.succeed({
@@ -148,7 +157,7 @@ class UnsupportedSyntaxKind extends Data.TaggedError('UnsupportedSyntaxKind')<{
 export type TypeNodeMetadata =
   | {
       optional: boolean;
-      kind: 'STRING' | 'NUMBER' | 'BOOLEAN' | 'DATE' | 'UNDEFINED';
+      kind: 'STRING' | 'NUMBER' | 'BOOLEAN' | 'DATE' | 'UNDEFINED' | 'ARRAY';
     }
   | {
       optional: boolean;
