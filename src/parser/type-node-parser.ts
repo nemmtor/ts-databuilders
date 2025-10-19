@@ -112,6 +112,21 @@ const generateTypeNodeMetadata = Effect.fnUntraced(function* (
         }),
     ),
     Match.when(
+      Match.is(SyntaxKind.TupleType),
+      (): Effect.Effect<TypeNodeMetadata, UnsupportedSyntaxKind> =>
+        Effect.gen(function* () {
+          const node = typeNode.asKindOrThrow(SyntaxKind.TupleType);
+          const nodes: TypeNode[] = node.getElements();
+
+          const members = yield* Effect.all(
+            nodes.map((typeNode) => generateTypeNodeMetadata(typeNode, false)),
+          );
+
+          return { kind: 'TUPLE', optional, members };
+        }),
+    ),
+
+    Match.when(
       Match.is(SyntaxKind.UnionType),
       (): Effect.Effect<TypeNodeMetadata, UnsupportedSyntaxKind> =>
         Effect.gen(function* () {
@@ -173,4 +188,9 @@ export type TypeNodeMetadata =
       optional: boolean;
       kind: 'TYPE_LITERAL';
       metadata: Record<string, TypeNodeMetadata>;
+    }
+  | {
+      optional: boolean;
+      kind: 'TUPLE';
+      members: TypeNodeMetadata[];
     };

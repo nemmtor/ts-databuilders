@@ -144,6 +144,9 @@ const getDefaultValueLiteral = (
       Match.when({ kind: 'DATE' }, () => Effect.succeed('new Date()')),
       Match.when({ kind: 'ARRAY' }, () => Effect.succeed('[]')),
       Match.when({ kind: 'LITERAL' }, (v) => Effect.succeed(v.literalValue)),
+      Match.when({ kind: 'TUPLE' }, (v) =>
+        Effect.succeed('"TODO: handle tuple"'),
+      ),
       Match.when({ kind: 'TYPE_LITERAL' }, (v) =>
         Effect.gen(function* () {
           const entries = yield* Effect.all(
@@ -195,4 +198,5 @@ const UNION_TYPE_PRIORITY: TypeNodeMetadata['kind'][] = [
   'LITERAL',
   'TYPE_LITERAL',
   'ARRAY',
+  'TUPLE',
 ];
