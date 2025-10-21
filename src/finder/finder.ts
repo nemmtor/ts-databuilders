@@ -6,10 +6,12 @@ import * as Stream from 'effect/Stream';
 import { Configuration } from '../configuration';
 import { TreeWalker } from '../tree-walker';
 import { FileContentChecker } from './file-content-checker';
+
 export class Finder extends Effect.Service<Finder>()('@TSDataBuilders/Finder', {
   effect: Effect.gen(function* () {
     const fileContentChecker = yield* FileContentChecker;
-    const { include } = yield* Configuration;
+    const { include, jsdocTag } = yield* Configuration;
+    const decorator = `@${jsdocTag}`;
 
     return {
       find: Effect.fnUntraced(function* () {
@@ -20,7 +22,7 @@ export class Finder extends Effect.Service<Finder>()('@TSDataBuilders/Finder', {
           Stream.mapEffect(
             (filePath) =>
               fileContentChecker
-                .check(filePath)
+                .check({ filePath, content: decorator })
                 .pipe(
                   Effect.map(
                     Chunk.map((v) =>

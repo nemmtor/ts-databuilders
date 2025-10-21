@@ -5,13 +5,73 @@ import * as Match from 'effect/Match';
 import { Project } from 'ts-morph';
 import { Configuration } from '../configuration';
 import type { DataBuilderMetadata, TypeNodeMetadata } from '../parser';
+import { BASE_BUILDER_CONTENT } from './base-builder-content';
+import { createBuilderMethod } from './create-builder-method';
+import { UNION_TYPE_PRIORITY } from './union-type-priority';
 
 export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
   '@TSDataBuilders/BuilderGenerator',
   {
     effect: Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;
-      const { outputDir, fileSuffix, builderSuffix } = yield* Configuration;
+      const { outputDir, fileSuffix, builderSuffix, defaults } =
+        yield* Configuration;
+
+      const getDefaultValueLiteral = (
+        typeNodeMetadata: TypeNodeMetadata,
+      ): string | number | boolean =>
+        Match.value(typeNodeMetadata).pipe(
+          Match.when({ kind: 'STRING' }, () => `"${defaults.string}"`),
+          Match.when({ kind: 'NUMBER' }, () => defaults.number),
+          Match.when({ kind: 'BOOLEAN' }, () => defaults.boolean),
+          Match.when({ kind: 'UNDEFINED' }, () => 'undefined'),
+          Match.when({ kind: 'DATE' }, () => 'new Date()'),
+          Match.when({ kind: 'ARRAY' }, () => '[]'),
+          Match.when({ kind: 'LITERAL' }, (v) => v.literalValue),
+          Match.when({ kind: 'TUPLE' }, (v) => {
+            const types = v.members.map((typePropertyShape) =>
+              getDefaultValueLiteral(typePropertyShape),
+            );
+            return `[${types.map((type) => `${type}`).join(', ')}]`;
+          }),
+          Match.when({ kind: 'TYPE_LITERAL' }, (v) => {
+            const entries = Object.entries(v.metadata)
+              .filter(([_, { optional }]) => !optional)
+              .map(
+                ([key, typePropertyShape]) =>
+                  `${key}: ${getDefaultValueLiteral(typePropertyShape)}`,
+              );
+            return `{${entries.join(', ')}}`;
+          }),
+          Match.when({ kind: 'RECORD' }, (v) => {
+            if (v.keyType.kind === 'STRING' || v.keyType.kind === 'NUMBER') {
+              return `{}`;
+            }
+
+            const key = getDefaultValueLiteral(v.keyType);
+            const value = getDefaultValueLiteral(v.valueType);
+            return `{${key}: ${value}}`;
+          }),
+
+          Match.when({ kind: 'UNION' }, (union) => {
+            const sortedMembers = union.members.slice().sort((a, b) => {
+              const priorityA = UNION_TYPE_PRIORITY.indexOf(a.kind);
+              const priorityB = UNION_TYPE_PRIORITY.indexOf(b.kind);
+
+              const indexA = priorityA === -1 ? Infinity : priorityA;
+              const indexB = priorityB === -1 ? Infinity : priorityB;
+
+              return indexA - indexB;
+            });
+
+            const targetTypeNode = sortedMembers[0];
+            if (!targetTypeNode) {
+              return 'never';
+            }
+            return getDefaultValueLiteral(targetTypeNode);
+          }),
+          Match.exhaustive,
+        );
 
       return {
         generateBaseBuilder: Effect.fnUntraced(function* () {
@@ -51,49 +111,22 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
 
           if (builderMetadata.shape.kind !== 'TYPE_LITERAL') {
             return yield* Effect.dieMessage(
-              'Expected root type to be type literal',
+              '[BuilderGenerator]: Expected root type to be type literal',
             );
           }
 
-          const defaultEntries = yield* Effect.all(
-            Object.entries(builderMetadata.shape.metadata)
-              .filter(([_, { optional }]) => !optional)
-              .map(([key, typePropertyShape]) =>
-                Effect.gen(function* () {
-                  const value =
-                    yield* getDefaultValueLiteral(typePropertyShape);
-                  return `${key}: ${value}`;
-                }),
-              ),
-          );
+          const defaultEntries = Object.entries(builderMetadata.shape.metadata)
+            .filter(([_, { optional }]) => !optional)
+            .map(
+              ([key, typePropertyShape]) =>
+                `${key}: ${getDefaultValueLiteral(typePropertyShape)}`,
+            );
 
           const builderMethods = Object.entries(
             builderMetadata.shape.metadata,
-          ).map(([fieldName, { optional }]) => {
-            const methodName = `with${fieldName.charAt(0).toUpperCase()}${fieldName.slice(1)}`;
-
-            const statements = optional
-              ? [
-                  `if (!${fieldName}) {`,
-                  `  const { ${fieldName}: _${fieldName}, ...rest } = this.build();`,
-                  `  return this.with(rest);`,
-                  `}`,
-                  `return this.with({ ${fieldName} });`,
-                ]
-              : [`return this.with({ ${fieldName} });`];
-
-            return {
-              name: methodName,
-              isPublic: true,
-              parameters: [
-                {
-                  name: fieldName,
-                  type: `${typeName}['${fieldName}']`,
-                },
-              ],
-              statements: statements,
-            };
-          });
+          ).map(([fieldName, { optional }]) =>
+            createBuilderMethod({ fieldName, optional, typeName }),
+          );
 
           const defaultObjectLiteral = `{\n  ${defaultEntries.join(',\n  ')}\n}`;
           file.addClass({
@@ -115,101 +148,3 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
     }),
   },
 ) {}
-
-const BASE_BUILDER_CONTENT = `export abstract class DataBuilder<T> {
-  private data: T;
-
-  constructor(initialData: T) {
-    this.data = initialData;
-  }
-
-  public build(): Readonly<T> {
-    return structuredClone(this.data);
-  }
-
-  protected with(partial: Partial<T>): this {
-    this.data = { ...this.data, ...partial };
-    return this;
-  }
-}
-`;
-
-const getDefaultValueLiteral = (
-  typeNodeMetadata: TypeNodeMetadata,
-): Effect.Effect<string | number | boolean, never, Configuration> =>
-  Effect.gen(function* () {
-    const { defaults } = yield* Configuration;
-
-    const result = Match.value(typeNodeMetadata).pipe(
-      Match.when({ kind: 'STRING' }, () =>
-        Effect.succeed(`"${defaults.string}"`),
-      ),
-      Match.when({ kind: 'NUMBER' }, () => Effect.succeed(defaults.number)),
-      Match.when({ kind: 'BOOLEAN' }, () => Effect.succeed(defaults.boolean)),
-      Match.when({ kind: 'UNDEFINED' }, () => Effect.succeed('undefined')),
-      Match.when({ kind: 'DATE' }, () => Effect.succeed('new Date()')),
-      Match.when({ kind: 'ARRAY' }, () => Effect.succeed('[]')),
-      Match.when({ kind: 'LITERAL' }, (v) => Effect.succeed(v.literalValue)),
-      Match.when({ kind: 'TUPLE' }, (v) =>
-        Effect.gen(function* () {
-          const types = yield* Effect.all(
-            v.members.map((typePropertyShape) =>
-              getDefaultValueLiteral(typePropertyShape),
-            ),
-          );
-          return `[${types.map((type) => `${type}`).join(', ')}]`;
-        }),
-      ),
-      Match.when({ kind: 'TYPE_LITERAL' }, (v) =>
-        Effect.gen(function* () {
-          const entries = yield* Effect.all(
-            Object.entries(v.metadata)
-              .filter(([_, { optional }]) => !optional)
-              .map(([key, typePropertyShape]) =>
-                Effect.gen(function* () {
-                  const value =
-                    yield* getDefaultValueLiteral(typePropertyShape);
-                  return `${key}: ${value}`;
-                }),
-              ),
-          );
-          return `{${entries.join(', ')}}`;
-        }),
-      ),
-
-      Match.when({ kind: 'UNION' }, (union) =>
-        Effect.gen(function* () {
-          const sortedMembers = union.members.slice().sort((a, b) => {
-            const priorityA = UNION_TYPE_PRIORITY.indexOf(a.kind);
-            const priorityB = UNION_TYPE_PRIORITY.indexOf(b.kind);
-
-            const indexA = priorityA === -1 ? Infinity : priorityA;
-            const indexB = priorityB === -1 ? Infinity : priorityB;
-
-            return indexA - indexB;
-          });
-
-          const targetTypeNode = sortedMembers[0];
-          if (!targetTypeNode) {
-            return 'never';
-          }
-          return yield* getDefaultValueLiteral(targetTypeNode);
-        }),
-      ),
-      Match.exhaustive,
-    );
-
-    return yield* result;
-  });
-
-const UNION_TYPE_PRIORITY: TypeNodeMetadata['kind'][] = [
-  'UNDEFINED',
-  'BOOLEAN',
-  'NUMBER',
-  'STRING',
-  'DATE',
-  'LITERAL',
-  'TYPE_LITERAL',
-  'ARRAY',
-  'TUPLE',
-];

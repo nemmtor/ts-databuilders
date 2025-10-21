@@ -6,13 +6,12 @@ import { DEFAULT_CONFIGURABLE_DEFAULTS, defaultsSchema } from './configuration';
 
 // TODO: options for: type union priorities
 // TODO: schema validation
-const decorator = Options.text('decorator').pipe(
-  Options.withAlias('d'),
+const jsdocTag = Options.text('jsdocTag').pipe(
   Options.withDescription(
-    'JSDoc decorator used to mark types for data building generation.',
+    'JSDoc tag used to mark types for data building generation.',
   ),
   Options.withSchema(Schema.NonEmptyTrimmedString),
-  Options.withDefault('@DataBuilder'),
+  Options.withDefault('DataBuilder'),
 );
 
 const outputDir = Options.text('output-dir').pipe(
@@ -84,7 +83,7 @@ const defaults = Options.keyValueMap('defaults').pipe(
 );
 
 export const options = {
-  decorator,
+  jsdocTag,
   outputDir,
   include,
   fileSuffix,

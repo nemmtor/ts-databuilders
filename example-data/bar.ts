@@ -1,3 +1,5 @@
+import type { External } from './external';
+
 /**
  * @DataBuilder
  */
@@ -27,6 +29,7 @@ export type Bar = {
     | true
   )[];
   tuple: [string, number, 'xd', 1];
+  'foo-bar'?: 'foo-bar';
   obj: {
     str: string;
     num: number;
@@ -40,6 +43,7 @@ export type Bar = {
     truzLiteral: true;
     numLiteral: 1;
     strLiteral: 'asd';
+    'foo-bar': 'foo-bar';
     arr: string[];
     arrUnion: (
       | {
@@ -59,4 +63,11 @@ export type Bar = {
       opt?: string;
     };
   };
+  fooRec: Record<'foo-bar', Record<'nested', { name: string }>>;
+  // foo: Foo;
+  // external: External;
+};
+
+type Foo = {
+  baz: string;
 };
