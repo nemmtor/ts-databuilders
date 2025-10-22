@@ -47,7 +47,12 @@ export class Parser extends Effect.Service<Parser>()('@TSDataBuilders/Parser', {
 
                   const node = typeAlias.getTypeNode();
                   if (!node || !node.isKind(SyntaxKind.TypeLiteral)) {
-                    return undefined;
+                    return Either.left(
+                      new UnsupportedBuilderTypeError({
+                        path,
+                        typeName: typeAlias.getName(),
+                      }),
+                    );
                   }
 
                   return Either.right({
@@ -66,19 +71,21 @@ export class Parser extends Effect.Service<Parser>()('@TSDataBuilders/Parser', {
 
           const result: DataBuilderMetadata[] = yield* Effect.all(
             typeLiteralsWithDataBuilder.map(({ name, node }) =>
-              typeNodeParser.generateMetadata(node, false).pipe(
-                Effect.map((shape) => ({ name, shape, path })),
-                Effect.catchTag('UnsupportedSyntaxKind', (cause) =>
-                  Effect.fail(
-                    new RichUnsupportedSyntaxKindError({
-                      kind: cause.kind,
-                      raw: cause.raw,
-                      path,
-                      typeName: name,
-                    }),
+              typeNodeParser
+                .generateMetadata({ typeNode: node, optional: false })
+                .pipe(
+                  Effect.map((shape) => ({ name, shape, path })),
+                  Effect.catchTag('UnsupportedSyntaxKindError', (cause) =>
+                    Effect.fail(
+                      new RichUnsupportedSyntaxKindError({
+                        kind: cause.kind,
+                        raw: cause.raw,
+                        path,
+                        typeName: name,
+                      }),
+                    ),
                   ),
                 ),
-              ),
             ),
           );
 
@@ -94,6 +101,10 @@ export class Parser extends Effect.Service<Parser>()('@TSDataBuilders/Parser', {
             Effect.dieMessage(
               `[Parser]: Unsupported syntax kind of id: ${cause.kind} with raw type: ${cause.raw} found in type ${cause.typeName} in file ${cause.path}`,
             ),
+          UnsupportedBuilderTypeError: (cause) =>
+            Effect.dieMessage(
+              `[Parser]: Unsupported builder type ${cause.typeName} in file ${cause.path}.`,
+            ),
         }),
       ),
     };
@@ -107,6 +118,13 @@ class ParserError extends Data.TaggedError('ParserError')<{
 
 class UnexportedDatabuilderError extends Data.TaggedError(
   'UnexportedDatabuilderError',
+)<{
+  typeName: string;
+  path: string;
+}> {}
+
+class UnsupportedBuilderTypeError extends Data.TaggedError(
+  'UnsupportedBuilderTypeError',
 )<{
   typeName: string;
   path: string;

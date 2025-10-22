@@ -1,4 +1,8 @@
-import type { External } from './external';
+import type {
+  External,
+  ExternalWithBuilder,
+  ExternalWithOptionals,
+} from './external';
 
 /**
  * @DataBuilder
@@ -29,7 +33,7 @@ export type Bar = {
     | true
   )[];
   tuple: [string, number, 'xd', 1];
-  'foo-bar'?: 'foo-bar';
+  'foo-bar-optional'?: 'foo-bar';
   obj: {
     str: string;
     num: number;
@@ -64,8 +68,14 @@ export type Bar = {
     };
   };
   fooRec: Record<'foo-bar', Record<'nested', { name: string }>>;
-  // foo: Foo;
-  // external: External;
+  foo: Foo;
+  external: External;
+  externalOptional?: External;
+  externalWithOptionals: ExternalWithOptionals;
+  externalWithBuilder: ExternalWithBuilder;
+  externalWithBuilderOptional?: ExternalWithBuilder;
+  'weird-name-with-builder': ExternalWithBuilder;
+  arrayOfBuilders: ExternalWithBuilder[];
 };
 
 type Foo = {

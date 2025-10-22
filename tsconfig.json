@@ -1,7 +1,9 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
-    "lib": ["ESNext"],
+    "lib": [
+      "ESNext"
+    ],
     "target": "ESNext",
     "module": "Preserve",
     "moduleDetection": "force",
@@ -68,5 +70,9 @@
         ]
       }
     ]
-  }
+  },
+  "include": [
+    "declarations",
+    "src"
+  ]
 }

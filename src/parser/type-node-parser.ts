@@ -2,7 +2,7 @@ import * as Data from 'effect/Data';
 import * as Effect from 'effect/Effect';
 import * as Match from 'effect/Match';
 import * as Option from 'effect/Option';
-import { SyntaxKind, type TypeNode } from 'ts-morph';
+import { Node, SyntaxKind, type TypeNode } from 'ts-morph';
 import { Configuration } from '../configuration';
 
 export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
@@ -10,14 +10,20 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
   {
     effect: Effect.gen(function* () {
       const { jsdocTag } = yield* Configuration;
-      const generateMetadata = (
-        typeNode: TypeNode,
-        optional: boolean,
-      ): Effect.Effect<TypeNodeMetadata, UnsupportedSyntaxKind> =>
+      const generateMetadata = (opts: {
+        typeNode: TypeNode;
+        optional: boolean;
+      }): Effect.Effect<
+        TypeNodeMetadata,
+        | UnsupportedSyntaxKindError
+        | MultipleSymbolDeclarationsError
+        | MissingSymbolDeclarationError
+        | MissingSymbolError
+      > =>
         Effect.gen(function* () {
+          const { typeNode, optional } = opts;
           const kind = typeNode.getKind();
 
-          // TODO: handle rest of kinds
           const typeNodeMetada = Match.value<SyntaxKind>(kind).pipe(
             Match.when(Match.is(SyntaxKind.StringKeyword), () =>
               Effect.succeed({
@@ -98,7 +104,7 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
 
                         const optional = member.hasQuestionToken();
                         const typeNodeMetadata = yield* Effect.suspend(() =>
-                          generateMetadata(typeNode, optional),
+                          generateMetadata({ typeNode, optional }),
                         );
 
                         return {
@@ -122,7 +128,9 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
 
                 const members = yield* Effect.all(
                   nodes.map((typeNode) =>
-                    Effect.suspend(() => generateMetadata(typeNode, false)),
+                    Effect.suspend(() =>
+                      generateMetadata({ typeNode, optional: false }),
+                    ),
                   ),
                 );
 
@@ -137,17 +145,20 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                 if (typeName === 'Record') {
                   const [keyTypeArg, valueTypeArg] = typeArgs;
                   if (!keyTypeArg || !valueTypeArg) {
-                    return yield* new UnsupportedSyntaxKind({
+                    return yield* new UnsupportedSyntaxKindError({
                       kind: kind,
                       raw: typeNode.getText(),
                     });
                   }
 
                   const keyType = yield* Effect.suspend(() =>
-                    generateMetadata(keyTypeArg, false),
+                    generateMetadata({ typeNode: keyTypeArg, optional: false }),
                   );
                   const valueType = yield* Effect.suspend(() =>
-                    generateMetadata(valueTypeArg, false),
+                    generateMetadata({
+                      typeNode: valueTypeArg,
+                      optional: false,
+                    }),
                   );
 
                   return {
@@ -159,14 +170,49 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                 }
 
                 const sym = node.getType().getAliasSymbol();
+                if (!sym) {
+                  return yield* new MissingSymbolError();
+                }
+                const declarations = sym.getDeclarations();
+                if (declarations && declarations.length > 1) {
+                  return yield* new MultipleSymbolDeclarationsError();
+                }
+                const [declaration] = declarations;
+                if (!declaration) {
+                  return yield* new MissingSymbolDeclarationError();
+                }
                 const hasBuilder = sym
                   ?.getJsDocTags()
                   .map((tag) => tag.getName())
                   .includes(jsdocTag);
-                console.log({ hasBuilder });
-                // TODO: read jsdocs here
-                // console.log({ filePath, typeName, d: tp });
-                throw new Error('TODO: implement');
+
+                if (!Node.isTypeAliasDeclaration(declaration)) {
+                  throw new Error(
+                    'TODO: for non-type-alias declarations (interfaces, etc.)',
+                  );
+                }
+                const aliasTypeNode = declaration.getTypeNode();
+                if (!aliasTypeNode) {
+                  return yield* new UnsupportedSyntaxKindError({
+                    kind: kind,
+                    raw: typeNode.getText(),
+                  });
+                }
+
+                if (!hasBuilder) {
+                  return yield* Effect.suspend(() =>
+                    generateMetadata({
+                      typeNode: aliasTypeNode,
+                      optional,
+                    }),
+                  );
+                }
+
+                return {
+                  kind: 'BUILDER' as const,
+                  name: declaration.getName(),
+                  optional,
+                };
               }),
             ),
             Match.when(Match.is(SyntaxKind.UnionType), () =>
@@ -176,7 +222,9 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                     .asKindOrThrow(SyntaxKind.UnionType)
                     .getTypeNodes()
                     .map((typeNode) =>
-                      Effect.suspend(() => generateMetadata(typeNode, false)),
+                      Effect.suspend(() =>
+                        generateMetadata({ typeNode, optional: false }),
+                      ),
                     ),
                 );
 
@@ -188,7 +236,7 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
           );
 
           if (Option.isNone(typeNodeMetada)) {
-            return yield* new UnsupportedSyntaxKind({
+            return yield* new UnsupportedSyntaxKindError({
               kind,
               raw: typeNode.getText(),
             });
@@ -204,10 +252,22 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
   },
 ) {}
 
-class UnsupportedSyntaxKind extends Data.TaggedError('UnsupportedSyntaxKind')<{
+class UnsupportedSyntaxKindError extends Data.TaggedError(
+  'UnsupportedSyntaxKindError',
+)<{
   kind: SyntaxKind;
   raw: string;
 }> {}
+
+class MultipleSymbolDeclarationsError extends Data.TaggedError(
+  'MultipleSymbolDeclarationsError',
+) {}
+
+class MissingSymbolDeclarationError extends Data.TaggedError(
+  'MissingSymbolDeclarationError',
+) {}
+
+class MissingSymbolError extends Data.TaggedError('MissingSymbolError') {}
 
 export type TypeNodeMetadata =
   | {
@@ -238,5 +298,10 @@ export type TypeNodeMetadata =
       kind: 'RECORD';
       keyType: TypeNodeMetadata;
       valueType: TypeNodeMetadata;
+      optional: boolean;
+    }
+  | {
+      kind: 'BUILDER';
+      name: string;
       optional: boolean;
     };

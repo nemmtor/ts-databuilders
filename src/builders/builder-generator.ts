@@ -5,9 +5,8 @@ import * as Match from 'effect/Match';
 import { Project } from 'ts-morph';
 import { Configuration } from '../configuration';
 import type { DataBuilderMetadata, TypeNodeMetadata } from '../parser';
-import { BASE_BUILDER_CONTENT } from './base-builder-content';
+import { toKebabCase } from '../utils';
 import { createBuilderMethod } from './create-builder-method';
-import { UNION_TYPE_PRIORITY } from './union-type-priority';
 
 export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
   '@TSDataBuilders/BuilderGenerator',
@@ -70,6 +69,9 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
             }
             return getDefaultValueLiteral(targetTypeNode);
           }),
+          Match.when({ kind: 'BUILDER' }, (v) => {
+            return `new ${v.name}${builderSuffix}().build()`;
+          }),
           Match.exhaustive,
         );
 
@@ -86,7 +88,7 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
 
           const builderFilePath = path.resolve(
             outputDir,
-            `${typeName.toLowerCase()}${fileSuffix}.ts`,
+            `${toKebabCase(typeName)}${fileSuffix}.ts`,
           );
 
           const file = project.createSourceFile(builderFilePath, '', {
@@ -115,6 +117,17 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
             );
           }
 
+          const nestedBuildersTypeNames = [
+            ...new Set(
+              extractNestedBuilderTypeNames(builderMetadata.shape.metadata),
+            ),
+          ];
+          nestedBuildersTypeNames.forEach((nestedBuilderTypeName) => {
+            file.addImportDeclaration({
+              namedImports: [`${nestedBuilderTypeName}${builderSuffix}`],
+              moduleSpecifier: `./${toKebabCase(nestedBuilderTypeName)}${fileSuffix}`,
+            });
+          });
           const defaultEntries = Object.entries(builderMetadata.shape.metadata)
             .filter(([_, { optional }]) => !optional)
             .map(
@@ -124,8 +137,13 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
 
           const builderMethods = Object.entries(
             builderMetadata.shape.metadata,
-          ).map(([fieldName, { optional }]) =>
-            createBuilderMethod({ fieldName, optional, typeName }),
+          ).map(([fieldName, { optional, kind }]) =>
+            createBuilderMethod({
+              fieldName,
+              optional,
+              typeName,
+              isNestedBuilder: kind === 'BUILDER',
+            }),
           );
 
           const defaultObjectLiteral = `{\n  ${defaultEntries.join(',\n  ')}\n}`;
@@ -148,3 +166,63 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
     }),
   },
 ) {}
+
+export const UNION_TYPE_PRIORITY: TypeNodeMetadata['kind'][] = [
+  'UNDEFINED',
+  'BOOLEAN',
+  'NUMBER',
+  'STRING',
+  'DATE',
+  'LITERAL',
+  'TYPE_LITERAL',
+  'ARRAY',
+  'TUPLE',
+  'RECORD',
+];
+
+export const BASE_BUILDER_CONTENT = `export abstract class DataBuilder<T> {
+  private data: T;
+
+  constructor(initialData: T) {
+    this.data = initialData;
+  }
+
+  public build(): Readonly<T> {
+    return structuredClone(this.data);
+  }
+
+  protected with(partial: Partial<T>): this {
+    this.data = { ...this.data, ...partial };
+    return this;
+  }
+}
+`;
+
+// TODO: refactor it
+function extractNestedBuilderTypeNames(
+  rootBuilderShapeMetadata: Record<string, TypeNodeMetadata>,
+): string[] {
+  const builderNames: string[] = [];
+
+  function traverse(node: TypeNodeMetadata) {
+    switch (node.kind) {
+      case 'BUILDER':
+        builderNames.push(node.name);
+        break;
+      case 'TYPE_LITERAL':
+        Object.values(node.metadata).forEach(traverse);
+        break;
+      case 'UNION':
+      case 'TUPLE':
+        node.members.forEach(traverse);
+        break;
+      case 'RECORD':
+        traverse(node.keyType);
+        traverse(node.valueType);
+        break;
+    }
+  }
+
+  Object.values(rootBuilderShapeMetadata).forEach(traverse);
+  return builderNames;
+}

@@ -11,12 +11,12 @@
     "check-actions": "pnpm exec biome check --formatter-enabled=false --linter-enabled=false",
     "check-actions:fix": "pnpm exec biome check --formatter-enabled=false --linter-enabled=false --write",
     "check-types": "tsc -b tsconfig.json",
-    "check-knip": "knip"
+    "check-knip": "knip",
+    "check-dep": "depcruise --output-type err-long src"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.2.6",
-    "@effect/language-service": "^0.46.0",
-    "@effect/platform-bun": "^0.81.1",
+    "@biomejs/biome": "^2.2.7",
+    "@effect/language-service": "^0.47.3",
     "@total-typescript/ts-reset": "^0.6.1",
     "@types/bun": "^1.3.0",
     "dependency-cruiser": "^17.1.0",
@@ -28,6 +28,7 @@
   "dependencies": {
     "@effect/cli": "^0.71.0",
     "@effect/platform": "^0.92.1",
+    "@effect/platform-bun": "^0.81.1",
     "effect": "^3.18.4",
     "ts-morph": "^27.0.2"
   }

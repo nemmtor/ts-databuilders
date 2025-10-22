@@ -1,25 +1,39 @@
+import { toCamelCase, toPascalCase } from '../utils';
+
 export const createBuilderMethod = (props: {
   typeName: string;
   fieldName: string;
   optional: boolean;
+  isNestedBuilder: boolean;
 }) => {
-  const { fieldName, optional, typeName } = props;
+  const { fieldName, optional, typeName, isNestedBuilder } = props;
+
   const normalizedFieldName = fieldName.replaceAll("'", '').replaceAll('"', '');
-  const parameterName = normalizedFieldName
-    .replaceAll('-', '')
-    .replaceAll('_', '');
+  const parameterName = toCamelCase(normalizedFieldName);
+  const methodName = `with${toPascalCase(normalizedFieldName)}`;
 
-  const methodName = `with${parameterName.charAt(0).toUpperCase()}${parameterName.slice(1)}`;
+  const normalPathStatements = [
+    `return this.with({ ${fieldName}: ${parameterName} });`,
+  ];
+  const builderPathStatements = [
+    `return this.with({ ${fieldName}: ${parameterName}.build() });`,
+  ];
 
+  const returnStatements = isNestedBuilder
+    ? builderPathStatements
+    : normalPathStatements;
+
+  const skipPathStatements = [
+    `if (!${parameterName}) {`,
+    `  const { "${normalizedFieldName}": _unused, ...rest } = this.build();`,
+    `  return this.with(rest);`,
+    `}`,
+  ];
   const statements = optional
-    ? [
-        `if (!${parameterName}) {`,
-        `  const { "${normalizedFieldName}": _unused, ...rest } = this.build();`,
-        `  return this.with(rest);`,
-        `}`,
-        `return this.with({ ${fieldName}: ${parameterName} });`,
-      ]
-    : [`return this.with({ ${fieldName}: ${parameterName} });`];
+    ? [...skipPathStatements, ...returnStatements]
+    : returnStatements;
+
+  const parameterType = `${typeName}['${normalizedFieldName}']`;
 
   return {
     name: methodName,
@@ -27,7 +41,7 @@ export const createBuilderMethod = (props: {
     parameters: [
       {
         name: parameterName,
-        type: `${typeName}['${normalizedFieldName}']`,
+        type: isNestedBuilder ? `DataBuilder<${parameterType}>` : parameterType,
       },
     ],
     statements: statements,
