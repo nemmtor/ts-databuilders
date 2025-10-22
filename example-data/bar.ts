@@ -1,5 +1,6 @@
 import type {
   External,
+  ExternalBranded,
   ExternalWithBuilder,
   ExternalWithOptionals,
 } from './external';
@@ -76,8 +77,18 @@ export type Bar = {
   externalWithBuilderOptional?: ExternalWithBuilder;
   'weird-name-with-builder': ExternalWithBuilder;
   arrayOfBuilders: ExternalWithBuilder[];
+  brandedNumber: number & { __brand: 'something' };
+  brandedString: string & { __brand: 'something' };
+  brandedBoolean: boolean & { __brand: 'something' };
+  brandedNumberOptional?: number & { __brand: 'something' };
+  brandedStringOptional?: string & { __brand: 'something' };
+  brandedBooleanOptional?: boolean & { __brand: 'something' };
+  fooBranded: FooBranded;
+  externalBranded: ExternalBranded;
 };
 
 type Foo = {
   baz: string;
 };
+
+type FooBranded = number & { __brand: 'something' };

@@ -169,6 +169,13 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                   };
                 }
 
+                if (typeName === 'Array') {
+                  return {
+                    kind: 'ARRAY' as const,
+                    optional,
+                  };
+                }
+
                 const sym = node.getType().getAliasSymbol();
                 if (!sym) {
                   return yield* new MissingSymbolError();
@@ -229,6 +236,42 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                 );
 
                 return { kind: 'UNION' as const, optional, members };
+              }),
+            ),
+            Match.when(Match.is(SyntaxKind.IntersectionType), () =>
+              Effect.gen(function* () {
+                const node = typeNode.asKindOrThrow(
+                  SyntaxKind.IntersectionType,
+                );
+                const types = node.getTypeNodes();
+
+                const primitiveKinds = [
+                  SyntaxKind.StringKeyword,
+                  SyntaxKind.NumberKeyword,
+                  SyntaxKind.BooleanKeyword,
+                ];
+
+                const primitiveType = types.find((t) =>
+                  primitiveKinds.includes(t.getKind()),
+                );
+
+                // If there's a primitive and other types, treat as branded/type cast
+                if (primitiveType && types.length > 1) {
+                  const baseMetadata = yield* Effect.suspend(() =>
+                    generateMetadata({
+                      typeNode: primitiveType,
+                      optional: false,
+                    }),
+                  );
+
+                  return {
+                    kind: 'TYPE_CAST' as const,
+                    baseTypeMetadata: baseMetadata,
+                    optional,
+                  };
+                }
+
+                throw new Error('TODO: handle it');
               }),
             ),
 
@@ -303,5 +346,10 @@ export type TypeNodeMetadata =
   | {
       kind: 'BUILDER';
       name: string;
+      optional: boolean;
+    }
+  | {
+      kind: 'TYPE_CAST';
+      baseTypeMetadata: TypeNodeMetadata;
       optional: boolean;
     };

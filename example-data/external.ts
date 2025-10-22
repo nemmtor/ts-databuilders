@@ -1,5 +1,5 @@
 export type External = {
-  baz: string;
+  baz: Array<string>;
 };
 
 export type ExternalWithOptionals = {
@@ -13,3 +13,5 @@ export type ExternalWithOptionals = {
 export type ExternalWithBuilder = {
   baz: string;
 };
+
+export type ExternalBranded = number & { __brand: 'something' };

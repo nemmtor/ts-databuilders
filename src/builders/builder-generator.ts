@@ -27,6 +27,9 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
           Match.when({ kind: 'DATE' }, () => 'new Date()'),
           Match.when({ kind: 'ARRAY' }, () => '[]'),
           Match.when({ kind: 'LITERAL' }, (v) => v.literalValue),
+          Match.when({ kind: 'TYPE_CAST' }, (v) =>
+            getDefaultValueLiteral(v.baseTypeMetadata),
+          ),
           Match.when({ kind: 'TUPLE' }, (v) => {
             const types = v.members.map((typePropertyShape) =>
               getDefaultValueLiteral(typePropertyShape),
@@ -132,7 +135,7 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
             .filter(([_, { optional }]) => !optional)
             .map(
               ([key, typePropertyShape]) =>
-                `${key}: ${getDefaultValueLiteral(typePropertyShape)}`,
+                `${key}: ${typePropertyShape.kind === 'TYPE_CAST' ? `${getDefaultValueLiteral(typePropertyShape)} as ${typeName}['${key}']` : getDefaultValueLiteral(typePropertyShape)}`,
             );
 
           const builderMethods = Object.entries(
