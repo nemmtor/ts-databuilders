@@ -1,5 +1,5 @@
 # 🧱 TS DataBuilders
-DataBuilder Generator is a lightweight CLI tool that automatically generates builder classes from annotated TypeScript interfaces.
+DataBuilder Generator is a lightweight CLI tool that automatically generates builder classes from annotated TypeScript types.
 Just add a @DataBuilder JSDoc tag, run one command, and get a fully-typed builder ready to use in your tests or factories.
 
 Built with [Effect](https://effect.website/).

@@ -1,8 +1,32 @@
 {
-  "name": "playground",
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "@nemmtor/ts-databuilders",
   "type": "module",
-  "private": true,
+  "private": false,
+  "description": "CLI tool that automatically generates builder classes from annotated TypeScript types.",
+  "keywords": [
+    "typescript",
+    "codegen",
+    "data-builder",
+    "testing"
+  ],
+  "author": {
+    "name": "nemmtor",
+    "url": "https://github.com/nemmtor"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nemmtor/ts-databuilders.git"
+  },
+  "bin": {
+    "ts-databuilders": "./dist/main.js"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "build:node": "bun build src/main.ts --target node --outfile dist/main.js --production --packages external",
     "start": "bun --console-depth 10 src/main.ts",
     "format": "biome format",
     "format:fix": "biome format --write",
@@ -28,8 +52,9 @@
   "dependencies": {
     "@effect/cli": "^0.71.0",
     "@effect/platform": "^0.92.1",
-    "@effect/platform-bun": "^0.81.1",
+    "@effect/platform-node": "^0.98.4",
     "effect": "^3.18.4",
+    "glob": "^11.0.3",
     "ts-morph": "^27.0.2"
   }
 }

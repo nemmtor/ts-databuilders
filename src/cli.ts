@@ -1,7 +1,6 @@
 import * as Command from '@effect/cli/Command';
 import * as Layer from 'effect/Layer';
 import { Builders } from './builders';
-import { BunTreeWalker } from './bun-tree-walker';
 import { options } from './cli-options';
 import { Configuration } from './configuration';
 import { Finder } from './finder';
@@ -17,7 +16,7 @@ export const cli = databuilderCommand.pipe(
       Finder.Default,
       Parser.Default,
       Builders.Default,
-      Layer.succeed(TreeWalker, TreeWalker.of(BunTreeWalker)),
+      TreeWalker.Default,
     ).pipe(
       Layer.provide(
         Layer.succeed(Configuration, Configuration.of(providedOptions)),

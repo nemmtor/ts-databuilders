@@ -1,13 +1,21 @@
-import * as Context from 'effect/Context';
 import * as Data from 'effect/Data';
-import type * as Stream from 'effect/Stream';
+import * as Effect from 'effect/Effect';
+import * as Stream from 'effect/Stream';
+import { glob } from 'glob';
 
-export class TreeWalker extends Context.Tag('TreeWalker')<
-  TreeWalker,
+export class TreeWalker extends Effect.Service<TreeWalker>()(
+  '@TSDataBuilders/TreeWalker',
   {
-    walk: (path: string) => Stream.Stream<string, TreeWalkerError, never>;
-  }
->() {}
+    succeed: {
+      walk: (path: string) => {
+        return Stream.fromAsyncIterable(
+          glob.stream(path, { cwd: '.', nodir: true }),
+          (cause) => new TreeWalkerError({ cause }),
+        );
+      },
+    },
+  },
+) {}
 
 export class TreeWalkerError extends Data.TaggedError('TreeWalkerError')<{
   cause: unknown;
