@@ -3,12 +3,7 @@ import * as Data from 'effect/Data';
 import * as Effect from 'effect/Effect';
 import * as Match from 'effect/Match';
 import * as Option from 'effect/Option';
-import {
-  Node,
-  SyntaxKind,
-  type TypeNode,
-  type TypeReferenceNode,
-} from 'ts-morph';
+import { Node, SyntaxKind, type Type, type TypeNode } from 'ts-morph';
 import { Configuration } from '../configuration';
 
 export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
@@ -16,55 +11,58 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
   {
     effect: Effect.gen(function* () {
       const { jsdocTag } = yield* Configuration;
-      const buildTypeReferenceNodeMetadata = (opts: {
-        node: TypeReferenceNode;
+
+      const resolveObjectTypeToMetadata = (opts: {
+        type: Type;
+        contextNode: TypeNode;
         optional: boolean;
       }) =>
         Effect.gen(function* () {
-          const { node, optional } = opts;
-          const type = node.getType();
+          const { type, contextNode, optional } = opts;
           const props = type.getProperties();
 
-          if (type.isObject() && props.length > 0) {
-            const metadata: Record<string, TypeNodeMetadata> = {};
-
-            for (const prop of props) {
-              const propName = prop.getName();
-              const propType = prop.getTypeAtLocation(node);
-              const isOptional = prop.isOptional();
-
-              const tempSource = node
-                .getProject()
-                .createSourceFile(
-                  `__temp_${randomUUID()}.ts`,
-                  `type __T = ${propType.getText()}`,
-                  { overwrite: true },
-                );
-              const tempTypeNode = tempSource
-                .getTypeAliasOrThrow('__T')
-                .getTypeNodeOrThrow();
-              const propMetadata = yield* Effect.suspend(() =>
-                generateMetadata({
-                  typeNode: tempTypeNode,
-                  optional: isOptional,
-                }),
-              );
-
-              metadata[propName] = propMetadata;
-            }
-
-            return {
-              kind: 'TYPE_LITERAL' as const,
-              metadata,
-              optional,
-            };
+          if (!type.isObject() || props.length === 0) {
+            return yield* new CannotBuildTypeReferenceMetadata({
+              raw: type.getText(),
+              kind: contextNode.getKind(),
+            });
           }
 
-          return yield* new CannotBuildTypeReferenceMetadata({
-            raw: type.getText(),
-            kind: node.getKind(),
-          });
+          const metadata: Record<string, TypeNodeMetadata> = {};
+
+          for (const prop of props) {
+            const propName = prop.getName();
+            const propType = prop.getTypeAtLocation(contextNode);
+            const isOptional = prop.isOptional();
+
+            const tempSource = contextNode
+              .getProject()
+              .createSourceFile(
+                `__temp_${randomUUID()}.ts`,
+                `type __T = ${propType.getText()}`,
+                { overwrite: true },
+              );
+            const tempTypeNode = tempSource
+              .getTypeAliasOrThrow('__T')
+              .getTypeNodeOrThrow();
+            const propMetadata = yield* Effect.suspend(() =>
+              generateMetadata({
+                typeNode: tempTypeNode,
+                optional: isOptional,
+              }),
+            );
+
+            metadata[propName] = propMetadata;
+            contextNode.getProject().removeSourceFile(tempSource);
+          }
+
+          return {
+            kind: 'TYPE_LITERAL' as const,
+            metadata,
+            optional,
+          };
         });
+
       const generateMetadata = (opts: {
         typeNode: TypeNode;
         optional: boolean;
@@ -98,80 +96,69 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                 optional,
               }),
             ),
-            Match.when(
-              (kind) => kind === SyntaxKind.UndefinedKeyword,
-              () =>
-                Effect.succeed({
-                  kind: 'UNDEFINED' as const,
-                  optional,
-                }),
+            Match.when(Match.is(SyntaxKind.UndefinedKeyword), () =>
+              Effect.succeed({
+                kind: 'UNDEFINED' as const,
+                optional,
+              }),
             ),
-            Match.when(
-              (kind) => kind === SyntaxKind.ArrayType,
-              () =>
-                Effect.succeed({
-                  kind: 'ARRAY' as const,
-                  optional,
-                }),
+            Match.when(Match.is(SyntaxKind.ArrayType), () =>
+              Effect.succeed({
+                kind: 'ARRAY' as const,
+                optional,
+              }),
             ),
-
-            Match.when(
-              (kind) => kind === SyntaxKind.LiteralType,
-              () =>
-                Effect.succeed({
-                  kind: 'LITERAL' as const,
-                  literalValue: typeNode
-                    .asKindOrThrow(SyntaxKind.LiteralType)
-                    .getLiteral()
-                    .getText(),
-                  optional,
-                }),
+            Match.when(Match.is(SyntaxKind.LiteralType), () =>
+              Effect.succeed({
+                kind: 'LITERAL' as const,
+                literalValue: typeNode
+                  .asKindOrThrow(SyntaxKind.LiteralType)
+                  .getLiteral()
+                  .getText(),
+                optional,
+              }),
             ),
-            Match.when(
-              (kind) => kind === SyntaxKind.TypeLiteral,
-              () =>
-                Effect.gen(function* () {
-                  const node = typeNode.asKindOrThrow(SyntaxKind.TypeLiteral);
-                  const members = node.getMembers();
+            Match.when(Match.is(SyntaxKind.TypeLiteral), () =>
+              Effect.gen(function* () {
+                const node = typeNode.asKindOrThrow(SyntaxKind.TypeLiteral);
+                const members = node.getMembers();
 
-                  const metadata: Record<string, TypeNodeMetadata> =
-                    yield* Effect.reduce(members, {}, (acc, member) =>
-                      Effect.gen(function* () {
-                        if (!member.isKind(SyntaxKind.PropertySignature)) {
-                          return acc;
-                        }
+                const metadata: Record<string, TypeNodeMetadata> =
+                  yield* Effect.reduce(members, {}, (acc, member) =>
+                    Effect.gen(function* () {
+                      if (!member.isKind(SyntaxKind.PropertySignature)) {
+                        return acc;
+                      }
 
-                        const typeNode = member.getTypeNode();
-                        if (!typeNode) {
-                          return acc;
-                        }
-                        const typeNodeName = member.getNameNode().getText();
+                      const typeNode = member.getTypeNode();
+                      if (!typeNode) {
+                        return acc;
+                      }
+                      const typeNodeName = member.getNameNode().getText();
+                      const optional = member.hasQuestionToken();
+                      const typeNodeMetadata = yield* Effect.suspend(() =>
+                        generateMetadata({ typeNode, optional }),
+                      );
 
-                        const optional = member.hasQuestionToken();
-                        const typeNodeMetadata = yield* Effect.suspend(() =>
-                          generateMetadata({ typeNode, optional }),
-                        );
+                      return {
+                        ...acc,
+                        [typeNodeName]: typeNodeMetadata,
+                      };
+                    }),
+                  );
 
-                        return {
-                          ...acc,
-                          [typeNodeName]: typeNodeMetadata,
-                        };
-                      }),
-                    );
-
-                  return {
-                    kind: 'TYPE_LITERAL' as const,
-                    metadata,
-                    optional,
-                  };
-                }),
+                return {
+                  kind: 'TYPE_LITERAL' as const,
+                  metadata,
+                  optional,
+                };
+              }),
             ),
             Match.when(Match.is(SyntaxKind.ImportType), () =>
               Effect.gen(function* () {
                 const importType = typeNode.asKindOrThrow(
                   SyntaxKind.ImportType,
                 );
-
                 const type = importType.getType();
                 const symbol = type.getSymbol();
 
@@ -188,54 +175,11 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                   return yield* new MissingSymbolDeclarationError();
                 }
 
-                const hasBuilder = symbol
-                  .getJsDocTags()
-                  .map((tag) => tag.getName())
-                  .includes(jsdocTag);
-
-                if (type.isObject()) {
-                  const props = type.getProperties();
-
-                  if (props.length > 0) {
-                    const metadata: Record<string, TypeNodeMetadata> = {};
-
-                    for (const prop of props) {
-                      const propName = prop.getName();
-                      const propType = prop.getTypeAtLocation(importType);
-                      const isOptional = prop.isOptional();
-
-                      const tempSource = importType
-                        .getProject()
-                        .createSourceFile(
-                          `__temp_${randomUUID()}.ts`,
-                          `type __T = ${propType.getText()}`,
-                          { overwrite: true },
-                        );
-                      const tempTypeNode = tempSource
-                        .getTypeAliasOrThrow('__T')
-                        .getTypeNodeOrThrow();
-                      const propMetadata = yield* Effect.suspend(() =>
-                        generateMetadata({
-                          typeNode: tempTypeNode,
-                          optional: isOptional,
-                        }),
-                      );
-
-                      metadata[propName] = propMetadata;
-
-                      importType.getProject().removeSourceFile(tempSource);
-                    }
-
-                    return {
-                      kind: 'TYPE_LITERAL' as const,
-                      metadata,
-                      optional,
-                    };
-                  }
-                }
-                return yield* new UnsupportedSyntaxKindError({
-                  kind: kind,
-                  raw: typeNode.getText(),
+                // Try to resolve as object type
+                return yield* resolveObjectTypeToMetadata({
+                  type,
+                  contextNode: importType,
+                  optional,
                 });
               }),
             ),
@@ -259,6 +203,7 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
               Effect.gen(function* () {
                 const node = typeNode.asKindOrThrow(SyntaxKind.TypeReference);
                 const typeName = node.getTypeName().getText();
+
                 if (typeName === 'Date') {
                   return {
                     kind: 'DATE' as const,
@@ -266,7 +211,15 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                   };
                 }
 
+                if (typeName === 'Array') {
+                  return {
+                    kind: 'ARRAY' as const,
+                    optional,
+                  };
+                }
+
                 const typeArgs = node.getTypeArguments();
+
                 if (typeName === 'Record') {
                   const [keyTypeArg, valueTypeArg] = typeArgs;
                   if (!keyTypeArg || !valueTypeArg) {
@@ -294,14 +247,7 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                   };
                 }
 
-                if (typeName === 'Array') {
-                  return {
-                    kind: 'ARRAY' as const,
-                    optional,
-                  };
-                }
-
-                // typescript utility types
+                // Built-in utility types - resolve via type system
                 const builtInUtilityTypes = [
                   'Pick',
                   'Omit',
@@ -313,16 +259,21 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                 ];
 
                 if (builtInUtilityTypes.includes(typeName)) {
-                  return yield* buildTypeReferenceNodeMetadata({
-                    node,
+                  return yield* resolveObjectTypeToMetadata({
+                    type: node.getType(),
+                    contextNode: node,
                     optional,
                   });
                 }
 
+                // User-defined types
                 const sym = node.getType().getAliasSymbol();
+
+                // No symbol - try to resolve as object (handles z.infer, etc.)
                 if (!sym) {
-                  return yield* buildTypeReferenceNodeMetadata({
-                    node,
+                  return yield* resolveObjectTypeToMetadata({
+                    type: node.getType(),
+                    contextNode: node,
                     optional,
                   });
                 }
@@ -335,6 +286,7 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                 if (!declaration) {
                   return yield* new MissingSymbolDeclarationError();
                 }
+
                 const hasBuilder = sym
                   ?.getJsDocTags()
                   .map((tag) => tag.getName())
@@ -345,6 +297,7 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                     'TODO: for non-type-alias declarations (interfaces, etc.)',
                   );
                 }
+
                 const aliasTypeNode = declaration.getTypeNode();
                 if (!aliasTypeNode) {
                   return yield* new UnsupportedSyntaxKindError({
@@ -402,7 +355,6 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                   primitiveKinds.includes(t.getKind()),
                 );
 
-                // If there's a primitive and other types, treat as branded/type cast
                 if (primitiveType && types.length > 1) {
                   const baseMetadata = yield* Effect.suspend(() =>
                     generateMetadata({
@@ -435,6 +387,7 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
           const result: TypeNodeMetadata = yield* typeNodeMetada.value;
           return result;
         });
+
       return {
         generateMetadata,
       };
