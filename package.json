@@ -57,5 +57,5 @@
     "glob": "^11.0.3",
     "ts-morph": "^27.0.2"
   },
-  "version": "0.0.1-alpha.0"
+  "version": "0.0.1-alpha.1"
 }
