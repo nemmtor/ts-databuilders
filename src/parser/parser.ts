@@ -46,7 +46,10 @@ export class Parser extends Effect.Service<Parser>()('@TSDataBuilders/Parser', {
                   }
 
                   const node = typeAlias.getTypeNode();
-                  if (!node || !node.isKind(SyntaxKind.TypeLiteral)) {
+                  const isValidNodeKind =
+                    node?.isKind(SyntaxKind.TypeLiteral) ||
+                    node?.isKind(SyntaxKind.TypeReference);
+                  if (!isValidNodeKind) {
                     return Either.left(
                       new UnsupportedBuilderTypeError({
                         path,
@@ -75,16 +78,26 @@ export class Parser extends Effect.Service<Parser>()('@TSDataBuilders/Parser', {
                 .generateMetadata({ typeNode: node, optional: false })
                 .pipe(
                   Effect.map((shape) => ({ name, shape, path })),
-                  Effect.catchTag('UnsupportedSyntaxKindError', (cause) =>
-                    Effect.fail(
-                      new RichUnsupportedSyntaxKindError({
-                        kind: cause.kind,
-                        raw: cause.raw,
-                        path,
-                        typeName: name,
-                      }),
-                    ),
-                  ),
+                  Effect.catchTags({
+                    UnsupportedSyntaxKindError: (cause) =>
+                      Effect.fail(
+                        new RichUnsupportedSyntaxKindError({
+                          kind: cause.kind,
+                          raw: cause.raw,
+                          path,
+                          typeName: name,
+                        }),
+                      ),
+                    CannotBuildTypeReferenceMetadata: (cause) =>
+                      Effect.fail(
+                        new RichCannotBuildTypeReferenceMetadata({
+                          kind: cause.kind,
+                          raw: cause.raw,
+                          path,
+                          typeName: name,
+                        }),
+                      ),
+                  }),
                 ),
             ),
           );
@@ -100,6 +113,10 @@ export class Parser extends Effect.Service<Parser>()('@TSDataBuilders/Parser', {
           RichUnsupportedSyntaxKindError: (cause) =>
             Effect.dieMessage(
               `[Parser]: Unsupported syntax kind of id: ${cause.kind} with raw type: ${cause.raw} found in type ${cause.typeName} in file ${cause.path}`,
+            ),
+          RichCannotBuildTypeReferenceMetadata: (cause) =>
+            Effect.dieMessage(
+              `[Parser]: Cannot build type reference metadata with kind of id: ${cause.kind} with raw type: ${cause.raw} found in type ${cause.typeName} in file ${cause.path}. Is it a root of databuilder?`,
             ),
           UnsupportedBuilderTypeError: (cause) =>
             Effect.dieMessage(
@@ -138,6 +155,10 @@ class RichUnsupportedSyntaxKindError extends Data.TaggedError(
   kind: SyntaxKind;
   raw: string;
 }> {}
+
+class RichCannotBuildTypeReferenceMetadata extends Data.TaggedError(
+  'RichCannotBuildTypeReferenceMetadata',
+)<{ typeName: string; path: string; kind: SyntaxKind; raw: string }> {}
 
 export type DataBuilderMetadata = {
   name: string;

@@ -1,8 +1,14 @@
+import { randomUUID } from 'node:crypto';
 import * as Data from 'effect/Data';
 import * as Effect from 'effect/Effect';
 import * as Match from 'effect/Match';
 import * as Option from 'effect/Option';
-import { Node, SyntaxKind, type TypeNode } from 'ts-morph';
+import {
+  Node,
+  SyntaxKind,
+  type TypeNode,
+  type TypeReferenceNode,
+} from 'ts-morph';
 import { Configuration } from '../configuration';
 
 export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
@@ -10,6 +16,55 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
   {
     effect: Effect.gen(function* () {
       const { jsdocTag } = yield* Configuration;
+      const buildTypeReferenceNodeMetadata = (opts: {
+        node: TypeReferenceNode;
+        optional: boolean;
+      }) =>
+        Effect.gen(function* () {
+          const { node, optional } = opts;
+          const type = node.getType();
+          const props = type.getProperties();
+
+          if (type.isObject() && props.length > 0) {
+            const metadata: Record<string, TypeNodeMetadata> = {};
+
+            for (const prop of props) {
+              const propName = prop.getName();
+              const propType = prop.getTypeAtLocation(node);
+              const isOptional = prop.isOptional();
+
+              const tempSource = node
+                .getProject()
+                .createSourceFile(
+                  `__temp_${randomUUID()}.ts`,
+                  `type __T = ${propType.getText()}`,
+                  { overwrite: true },
+                );
+              const tempTypeNode = tempSource
+                .getTypeAliasOrThrow('__T')
+                .getTypeNodeOrThrow();
+              const propMetadata = yield* Effect.suspend(() =>
+                generateMetadata({
+                  typeNode: tempTypeNode,
+                  optional: isOptional,
+                }),
+              );
+
+              metadata[propName] = propMetadata;
+            }
+
+            return {
+              kind: 'TYPE_LITERAL' as const,
+              metadata,
+              optional,
+            };
+          }
+
+          return yield* new CannotBuildTypeReferenceMetadata({
+            raw: type.getText(),
+            kind: node.getKind(),
+          });
+        });
       const generateMetadata = (opts: {
         typeNode: TypeNode;
         optional: boolean;
@@ -18,7 +73,7 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
         | UnsupportedSyntaxKindError
         | MultipleSymbolDeclarationsError
         | MissingSymbolDeclarationError
-        | MissingSymbolError
+        | CannotBuildTypeReferenceMetadata
       > =>
         Effect.gen(function* () {
           const { typeNode, optional } = opts;
@@ -42,16 +97,6 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                 kind: 'BOOLEAN' as const,
                 optional,
               }),
-            ),
-            Match.when(
-              (kind) =>
-                kind === SyntaxKind.TypeReference &&
-                typeNode.getText() === 'Date',
-              () =>
-                Effect.succeed({
-                  kind: 'DATE' as const,
-                  optional,
-                }),
             ),
             Match.when(
               (kind) => kind === SyntaxKind.UndefinedKeyword,
@@ -121,6 +166,79 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                   };
                 }),
             ),
+            Match.when(Match.is(SyntaxKind.ImportType), () =>
+              Effect.gen(function* () {
+                const importType = typeNode.asKindOrThrow(
+                  SyntaxKind.ImportType,
+                );
+
+                const type = importType.getType();
+                const symbol = type.getSymbol();
+
+                if (!symbol) {
+                  throw new Error('TODO: missing symbol');
+                }
+
+                const declarations = symbol.getDeclarations();
+                if (declarations && declarations.length > 1) {
+                  return yield* new MultipleSymbolDeclarationsError();
+                }
+                const [declaration] = declarations;
+                if (!declaration) {
+                  return yield* new MissingSymbolDeclarationError();
+                }
+
+                const hasBuilder = symbol
+                  .getJsDocTags()
+                  .map((tag) => tag.getName())
+                  .includes(jsdocTag);
+
+                if (type.isObject()) {
+                  const props = type.getProperties();
+
+                  if (props.length > 0) {
+                    const metadata: Record<string, TypeNodeMetadata> = {};
+
+                    for (const prop of props) {
+                      const propName = prop.getName();
+                      const propType = prop.getTypeAtLocation(importType);
+                      const isOptional = prop.isOptional();
+
+                      const tempSource = importType
+                        .getProject()
+                        .createSourceFile(
+                          `__temp_${randomUUID()}.ts`,
+                          `type __T = ${propType.getText()}`,
+                          { overwrite: true },
+                        );
+                      const tempTypeNode = tempSource
+                        .getTypeAliasOrThrow('__T')
+                        .getTypeNodeOrThrow();
+                      const propMetadata = yield* Effect.suspend(() =>
+                        generateMetadata({
+                          typeNode: tempTypeNode,
+                          optional: isOptional,
+                        }),
+                      );
+
+                      metadata[propName] = propMetadata;
+
+                      importType.getProject().removeSourceFile(tempSource);
+                    }
+
+                    return {
+                      kind: 'TYPE_LITERAL' as const,
+                      metadata,
+                      optional,
+                    };
+                  }
+                }
+                return yield* new UnsupportedSyntaxKindError({
+                  kind: kind,
+                  raw: typeNode.getText(),
+                });
+              }),
+            ),
             Match.when(Match.is(SyntaxKind.TupleType), () =>
               Effect.gen(function* () {
                 const node = typeNode.asKindOrThrow(SyntaxKind.TupleType);
@@ -141,6 +259,13 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
               Effect.gen(function* () {
                 const node = typeNode.asKindOrThrow(SyntaxKind.TypeReference);
                 const typeName = node.getTypeName().getText();
+                if (typeName === 'Date') {
+                  return {
+                    kind: 'DATE' as const,
+                    optional,
+                  };
+                }
+
                 const typeArgs = node.getTypeArguments();
                 if (typeName === 'Record') {
                   const [keyTypeArg, valueTypeArg] = typeArgs;
@@ -176,10 +301,32 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                   };
                 }
 
+                // typescript utility types
+                const builtInUtilityTypes = [
+                  'Pick',
+                  'Omit',
+                  'Partial',
+                  'Required',
+                  'Readonly',
+                  'Extract',
+                  'NonNullable',
+                ];
+
+                if (builtInUtilityTypes.includes(typeName)) {
+                  return yield* buildTypeReferenceNodeMetadata({
+                    node,
+                    optional,
+                  });
+                }
+
                 const sym = node.getType().getAliasSymbol();
                 if (!sym) {
-                  return yield* new MissingSymbolError();
+                  return yield* buildTypeReferenceNodeMetadata({
+                    node,
+                    optional,
+                  });
                 }
+
                 const declarations = sym.getDeclarations();
                 if (declarations && declarations.length > 1) {
                   return yield* new MultipleSymbolDeclarationsError();
@@ -310,7 +457,9 @@ class MissingSymbolDeclarationError extends Data.TaggedError(
   'MissingSymbolDeclarationError',
 ) {}
 
-class MissingSymbolError extends Data.TaggedError('MissingSymbolError') {}
+class CannotBuildTypeReferenceMetadata extends Data.TaggedError(
+  'CannotBuildTypeReferenceMetadata',
+)<{ raw: string; kind: SyntaxKind }> {}
 
 export type TypeNodeMetadata =
   | {

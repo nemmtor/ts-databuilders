@@ -1,8 +1,15 @@
 import type {
   External,
   ExternalBranded,
+  ExternalDiscUnionExcluded,
+  ExternalExcludedDiscUnion,
+  ExternalFoo1Excluded,
+  ExternalNullable,
+  ExternalsDiscUnion,
+  ExternalsUnion,
   ExternalWithBuilder,
   ExternalWithOptionals,
+  ExternalWithUtilities,
 } from './external';
 
 /**
@@ -75,6 +82,8 @@ export type Bar = {
   externalWithOptionals: ExternalWithOptionals;
   externalWithBuilder: ExternalWithBuilder;
   externalWithBuilderOptional?: ExternalWithBuilder;
+  externalWithUtilities: ExternalWithUtilities;
+  externalWithUtilitiesOptional?: ExternalWithUtilities;
   'weird-name-with-builder': ExternalWithBuilder;
   arrayOfBuilders: ExternalWithBuilder[];
   brandedNumber: number & { __brand: 'something' };
@@ -85,10 +94,31 @@ export type Bar = {
   brandedBooleanOptional?: boolean & { __brand: 'something' };
   fooBranded: FooBranded;
   externalBranded: ExternalBranded;
+  pickedFoo: Pick<Foo, 'foo'>;
+  omittedFoo: Omit<Foo, 'foo'>;
+  combinatedFoo: Omit<Pick<Foo, 'baz' | 'bar'>, 'bar'>;
+  readonlyFoo: Readonly<Foo>;
+  partialFoo: Partial<Foo>;
+  requiredFoo: Required<OptionalFoo>;
+  externalNonNullable: NonNullable<ExternalNullable>;
+  externalsUnion: ExternalsUnion;
+  externalsDiscUnion: ExternalsDiscUnion;
+  pickedInline: Pick<ExternalsDiscUnion, 'id'>;
+  excludedExternalDiscUnion: ExternalExcludedDiscUnion;
+  externalfoo1Excluded: ExternalFoo1Excluded;
+  externalDiscUnionExcluded: ExternalDiscUnionExcluded;
 };
 
 type Foo = {
   baz: string;
+  foo: string;
+  bar: string;
+};
+
+type OptionalFoo = {
+  baz?: string;
+  foo?: string;
+  bar?: string;
 };
 
 type FooBranded = number & { __brand: 'something' };

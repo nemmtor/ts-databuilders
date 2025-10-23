@@ -13,7 +13,9 @@ export class Builders extends Effect.Service<Builders>()(
       const { outputDir } = yield* Configuration;
 
       return {
-        create: Effect.fnUntraced(function* (metadata: DataBuilderMetadata[]) {
+        create: Effect.fnUntraced(function* (
+          buildersMetadata: DataBuilderMetadata[],
+        ) {
           const exists = yield* fs.exists(outputDir);
           if (exists) {
             yield* fs.remove(outputDir, { recursive: true });
@@ -22,8 +24,20 @@ export class Builders extends Effect.Service<Builders>()(
 
           yield* builderGenerator.generateBaseBuilder();
 
+          const builderNames = buildersMetadata.map((v) => v.name);
+          const duplicatedBuilderNames = builderNames.filter(
+            (name, index) => builderNames.indexOf(name) !== index,
+          );
+          const uniqueDuplicates = [...new Set(duplicatedBuilderNames)];
+
+          if (duplicatedBuilderNames.length > 0) {
+            return yield* Effect.dieMessage(
+              `Duplicated builders: ${uniqueDuplicates.join(', ')}`,
+            );
+          }
+
           yield* Effect.all(
-            metadata.map((builderMetadata) =>
+            buildersMetadata.map((builderMetadata) =>
               builderGenerator.generateBuilder(builderMetadata),
             ),
             { concurrency: 'unbounded' },
