@@ -2,23 +2,22 @@ import * as Options from '@effect/cli/Options';
 import * as HashMap from 'effect/HashMap';
 import * as Option from 'effect/Option';
 import * as Schema from 'effect/Schema';
-import { DEFAULT_CONFIGURABLE_DEFAULTS, defaultsSchema } from './configuration';
+import { ConfigurationSchema } from './configuration';
 
 // TODO: options for: type union priorities
-// TODO: schema validation
 const jsdocTag = Options.text('jsdocTag').pipe(
   Options.withDescription(
     'JSDoc tag used to mark types for data building generation.',
   ),
-  Options.withSchema(Schema.NonEmptyTrimmedString),
-  Options.withDefault('DataBuilder'),
+  Options.withSchema(ConfigurationSchema.fields.jsdocTag),
+  Options.optional,
 );
 
 const outputDir = Options.text('output-dir').pipe(
   Options.withAlias('o'),
   Options.withDescription('Output directory for generated builders.'),
-  Options.withSchema(Schema.NonEmptyTrimmedString),
-  Options.withDefault('generated/builders'),
+  Options.withSchema(ConfigurationSchema.fields.outputDir),
+  Options.optional,
 );
 
 const include = Options.text('include').pipe(
@@ -26,20 +25,20 @@ const include = Options.text('include').pipe(
   Options.withDescription(
     'Glob pattern for files included while searching for jsdoc tag.',
   ),
-  Options.withSchema(Schema.NonEmptyTrimmedString),
-  Options.withDefault('src/**/*.ts{,x}'),
+  Options.withSchema(ConfigurationSchema.fields.include),
+  Options.optional,
 );
 
 const fileSuffix = Options.text('file-suffix').pipe(
   Options.withDescription('File suffix for created builder files.'),
-  Options.withSchema(Schema.NonEmptyTrimmedString),
-  Options.withDefault('.builder'),
+  Options.withSchema(ConfigurationSchema.fields.fileSuffix),
+  Options.optional,
 );
 
 const builderSuffix = Options.text('builder-suffix').pipe(
   Options.withDescription('Suffix for generated classes.'),
-  Options.withSchema(Schema.NonEmptyTrimmedString),
-  Options.withDefault('Builder'),
+  Options.withSchema(ConfigurationSchema.fields.builderSuffix),
+  Options.optional,
 );
 
 const defaults = Options.keyValueMap('defaults').pipe(
@@ -51,7 +50,7 @@ const defaults = Options.keyValueMap('defaults').pipe(
       key: Schema.Literal('string', 'number', 'boolean'),
       value: Schema.String,
     }).pipe(
-      Schema.transform(defaultsSchema, {
+      Schema.transform(ConfigurationSchema.fields.defaults, {
         decode: (v) => {
           return {
             string: v.pipe(
@@ -79,7 +78,7 @@ const defaults = Options.keyValueMap('defaults').pipe(
       }),
     ),
   ),
-  Options.withDefault(DEFAULT_CONFIGURABLE_DEFAULTS),
+  Options.optional,
 );
 
 export const options = {

@@ -2,7 +2,7 @@ import * as Command from '@effect/cli/Command';
 import * as Layer from 'effect/Layer';
 import { Builders } from './builders';
 import { options } from './cli-options';
-import { Configuration } from './configuration';
+import * as Configuration from './configuration';
 import { Finder } from './finder';
 import { Parser } from './parser';
 import { program } from './program';
@@ -19,7 +19,10 @@ export const cli = databuilderCommand.pipe(
       TreeWalker.Default,
     ).pipe(
       Layer.provide(
-        Layer.succeed(Configuration, Configuration.of(providedOptions)),
+        Layer.effect(
+          Configuration.Configuration,
+          Configuration.load(providedOptions),
+        ),
       ),
     ),
   ),
