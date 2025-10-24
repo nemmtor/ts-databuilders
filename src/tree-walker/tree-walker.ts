@@ -17,6 +17,6 @@ export class TreeWalker extends Effect.Service<TreeWalker>()(
   },
 ) {}
 
-export class TreeWalkerError extends Data.TaggedError('TreeWalkerError')<{
+class TreeWalkerError extends Data.TaggedError('TreeWalkerError')<{
   cause: unknown;
 }> {}

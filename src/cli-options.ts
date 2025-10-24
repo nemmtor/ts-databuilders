@@ -50,32 +50,39 @@ const defaults = Options.keyValueMap('defaults').pipe(
       key: Schema.Literal('string', 'number', 'boolean'),
       value: Schema.String,
     }).pipe(
-      Schema.transform(ConfigurationSchema.fields.defaults, {
-        decode: (v) => {
-          return {
-            string: v.pipe(
-              HashMap.get('string'),
-              Option.getOrElse(() => ''),
-            ),
-            number: v.pipe(
-              HashMap.get('number'),
-              Option.getOrElse(() => '0'),
-            ),
-            boolean: v.pipe(
-              HashMap.get('boolean'),
-              Option.getOrElse(() => 'false'),
-            ),
-          };
+      Schema.transform(
+        Schema.Struct({
+          string: Schema.String,
+          number: Schema.NumberFromString,
+          boolean: Schema.BooleanFromString,
+        }),
+        {
+          decode: (v) => {
+            return {
+              string: v.pipe(
+                HashMap.get('string'),
+                Option.getOrElse(() => ''),
+              ),
+              number: v.pipe(
+                HashMap.get('number'),
+                Option.getOrElse(() => '0'),
+              ),
+              boolean: v.pipe(
+                HashMap.get('boolean'),
+                Option.getOrElse(() => 'false'),
+              ),
+            };
+          },
+          encode: (v) => {
+            return HashMap.make(
+              ['string' as const, v.string],
+              ['number' as const, v.number],
+              ['boolean' as const, v.boolean],
+            );
+          },
+          strict: false,
         },
-        encode: (v) => {
-          return HashMap.make(
-            ['string' as const, v.string],
-            ['number' as const, v.number],
-            ['boolean' as const, v.boolean],
-          );
-        },
-        strict: false,
-      }),
+      ),
     ),
   ),
   Options.optional,

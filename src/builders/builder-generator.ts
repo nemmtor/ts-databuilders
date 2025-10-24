@@ -170,7 +170,7 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
   },
 ) {}
 
-export const UNION_TYPE_PRIORITY: TypeNodeMetadata['kind'][] = [
+const UNION_TYPE_PRIORITY: TypeNodeMetadata['kind'][] = [
   'UNDEFINED',
   'BOOLEAN',
   'NUMBER',
@@ -183,7 +183,7 @@ export const UNION_TYPE_PRIORITY: TypeNodeMetadata['kind'][] = [
   'RECORD',
 ];
 
-export const BASE_BUILDER_CONTENT = `export abstract class DataBuilder<T> {
+const BASE_BUILDER_CONTENT = `export abstract class DataBuilder<T> {
   private data: T;
 
   constructor(initialData: T) {

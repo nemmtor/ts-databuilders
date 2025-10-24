@@ -16,8 +16,8 @@ export const ConfigurationSchema = Schema.Struct({
   builderSuffix: Schema.NonEmptyTrimmedString,
   defaults: Schema.Struct({
     string: Schema.String,
-    number: Schema.NumberFromString,
-    boolean: Schema.BooleanFromString,
+    number: Schema.Number,
+    boolean: Schema.Boolean,
   }),
 });
 
@@ -35,7 +35,7 @@ const DEFAULT_CONFIGURATION = ConfigurationSchema.make({
 });
 type ConfigurationShape = typeof ConfigurationSchema.Type;
 
-export const ConfigurationFileSchema = ConfigurationSchema.pipe(
+const ConfigurationFileSchema = ConfigurationSchema.pipe(
   Schema.omit('defaults'),
   Schema.extend(
     Schema.Struct({
@@ -79,10 +79,7 @@ const resolveConfig = (opts: {
   configFileContent: Option.Option<ConfigurationFileShape>;
 }): Effect.Effect<ConfigurationShape> =>
   Effect.gen(function* () {
-    const resolve = resolveConfigValue({
-      provided: opts.providedConfiguration,
-      fileContent: opts.configFileContent,
-    });
+    const resolve = resolveConfigValue(opts);
 
     return {
       builderSuffix: yield* resolve('builderSuffix'),
@@ -99,13 +96,13 @@ const resolveConfig = (opts: {
 
 const resolveConfigValue =
   (opts: {
-    provided: LoadConfigurationOptions;
-    fileContent: Option.Option<Omit<ConfigurationFileShape, '$schema'>>;
+    providedConfiguration: LoadConfigurationOptions;
+    configFileContent: Option.Option<ConfigurationFileShape>;
   }) =>
   <K extends keyof ConfigurationShape>(key: K) =>
-    opts.provided[key].pipe(
+    opts.providedConfiguration[key].pipe(
       Effect.orElse(() =>
-        Option.flatMap(opts.fileContent, (fileContent) =>
+        Option.flatMap(opts.configFileContent, (fileContent) =>
           Option.fromNullable(fileContent[key]),
         ),
       ),

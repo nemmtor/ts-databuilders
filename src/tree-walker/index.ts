@@ -1,1 +1,1 @@
-export { TreeWalker, TreeWalkerError } from './tree-walker';
+export { TreeWalker } from './tree-walker';
