@@ -98,19 +98,19 @@ const resolveConfig = (opts: {
     const resolve = resolveConfigValue(opts);
 
     const defaultsFromCli = opts.providedConfiguration.defaults.pipe(
-      Option.getOrUndefined,
+      Option.getOrElse(() => ({})),
     );
     const defaultsFromFile = Option.flatMap(
       opts.configFileContent,
       (fileContent) => Option.fromNullable(fileContent.defaults),
-    ).pipe(Option.getOrUndefined);
+    ).pipe(Option.getOrElse(() => ({})));
     const providedDefaultsFromCli = Object.fromEntries(
-      Object.entries(defaultsFromCli ?? {}).filter(
+      Object.entries(defaultsFromCli).filter(
         ([_, v]) => typeof v !== 'undefined',
       ),
     );
     const providedDefaultsFromFile = Object.fromEntries(
-      Object.entries(defaultsFromFile ?? {}).filter(
+      Object.entries(defaultsFromFile).filter(
         ([_, v]) => typeof v !== 'undefined',
       ),
     );
