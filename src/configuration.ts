@@ -8,7 +8,7 @@ import * as Process from './process';
 
 const CONFIG_FILE_NAME = 'ts-databuilders.json';
 
-export const ConfigurationSchema = Schema.Struct({
+const ConfigurationSchema = Schema.Struct({
   jsdocTag: Schema.NonEmptyTrimmedString,
   outputDir: Schema.NonEmptyTrimmedString,
   include: Schema.NonEmptyTrimmedString,
@@ -56,8 +56,24 @@ export class Configuration extends Context.Tag('Configuration')<
   ConfigurationShape
 >() {}
 
+export const CliConfigurationSchema = Schema.Struct({
+  jsdocTag: Schema.NonEmptyTrimmedString,
+  outputDir: Schema.NonEmptyTrimmedString,
+  include: Schema.NonEmptyTrimmedString,
+  fileSuffix: Schema.NonEmptyTrimmedString,
+  builderSuffix: Schema.NonEmptyTrimmedString,
+  defaults: Schema.Struct({
+    string: Schema.String,
+    number: Schema.Number,
+    boolean: Schema.Boolean,
+  }).pipe(Schema.partial),
+});
+type CliConfigurationShape = typeof CliConfigurationSchema.Type;
+
 type LoadConfigurationOptions = {
-  [key in keyof ConfigurationShape]: Option.Option<ConfigurationShape[key]>;
+  [key in keyof CliConfigurationShape]: Option.Option<
+    CliConfigurationShape[key]
+  >;
 };
 
 export const load = (opts: LoadConfigurationOptions) =>
@@ -81,6 +97,28 @@ const resolveConfig = (opts: {
   Effect.gen(function* () {
     const resolve = resolveConfigValue(opts);
 
+    const defaultsFromCli = opts.providedConfiguration.defaults.pipe(
+      Option.getOrUndefined,
+    );
+    const defaultsFromFile = Option.flatMap(
+      opts.configFileContent,
+      (fileContent) => Option.fromNullable(fileContent.defaults),
+    ).pipe(Option.getOrUndefined);
+    const providedDefaultsFromCli = Object.fromEntries(
+      Object.entries(defaultsFromCli ?? {}).filter(
+        ([_, v]) => typeof v !== 'undefined',
+      ),
+    );
+    const providedDefaultsFromFile = Object.fromEntries(
+      Object.entries(defaultsFromFile ?? {}).filter(
+        ([_, v]) => typeof v !== 'undefined',
+      ),
+    );
+    const providedDefaults = {
+      ...providedDefaultsFromFile,
+      ...providedDefaultsFromCli,
+    };
+
     return {
       builderSuffix: yield* resolve('builderSuffix'),
       include: yield* resolve('include'),
@@ -89,7 +127,7 @@ const resolveConfig = (opts: {
       outputDir: yield* resolve('outputDir'),
       defaults: {
         ...DEFAULT_CONFIGURATION.defaults,
-        ...(yield* resolve('defaults')),
+        ...providedDefaults,
       },
     };
   });

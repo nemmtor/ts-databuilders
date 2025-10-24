@@ -4,7 +4,7 @@ import * as Layer from 'effect/Layer';
 
 type ProcessShape = {
   readonly cwd: Effect.Effect<string>;
-}
+};
 
 export class Process extends Context.Tag('Process')<Process, ProcessShape>() {}
 
