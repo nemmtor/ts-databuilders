@@ -1,4 +1,4 @@
-import { FileSystem } from '@effect/platform';
+import * as FileSystem from '@effect/platform/FileSystem';
 import * as Path from '@effect/platform/Path';
 import * as Context from 'effect/Context';
 import * as Effect from 'effect/Effect';
@@ -35,7 +35,7 @@ const DEFAULT_CONFIGURATION = ConfigurationSchema.make({
 });
 type ConfigurationShape = typeof ConfigurationSchema.Type;
 
-const ConfigurationFileSchema = ConfigurationSchema.pipe(
+export const ConfigurationFileSchema = ConfigurationSchema.pipe(
   Schema.omit('defaults'),
   Schema.extend(
     Schema.Struct({

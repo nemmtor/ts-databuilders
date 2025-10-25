@@ -36,7 +36,8 @@
     "check-actions:fix": "pnpm exec biome check --formatter-enabled=false --linter-enabled=false --write",
     "check-types": "tsc -b tsconfig.json",
     "check-knip": "knip",
-    "check-dep": "depcruise --output-type err-long src"
+    "check-dep": "depcruise --output-type err-long src",
+    "gen:schema": "bun scripts/generate-schema.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.2.7",

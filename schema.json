@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$defs": {
+    "NonEmptyTrimmedString": {
+      "type": "string",
+      "description": "a non empty string",
+      "title": "nonEmptyString",
+      "pattern": "^\\S[\\s\\S]*\\S$|^\\S$|^$",
+      "minLength": 1
+    }
+  },
+  "type": "object",
+  "required": [],
+  "properties": {
+    "jsdocTag": {
+      "$ref": "#/$defs/NonEmptyTrimmedString"
+    },
+    "outputDir": {
+      "$ref": "#/$defs/NonEmptyTrimmedString"
+    },
+    "include": {
+      "$ref": "#/$defs/NonEmptyTrimmedString"
+    },
+    "fileSuffix": {
+      "$ref": "#/$defs/NonEmptyTrimmedString"
+    },
+    "builderSuffix": {
+      "$ref": "#/$defs/NonEmptyTrimmedString"
+    },
+    "$schema": {
+      "type": "string"
+    },
+    "defaults": {
+      "type": "object",
+      "required": [],
+      "properties": {
+        "string": {
+          "type": "string"
+        },
+        "number": {
+          "type": "number"
+        },
+        "boolean": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
