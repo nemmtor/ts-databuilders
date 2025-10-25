@@ -1,4 +1,13 @@
 {
-  "$schema": "./schema.json",
-  "include": "example-data/**"
+  "$schema": "https://raw.githubusercontent.com/nemmtor/ts-databuilders/refs/heads/main/schema.json",
+  "include": "example-data/**",
+  "builderSuffix": "GeneratedBuilder",
+  "fileSuffix": ".generated-builder",
+  "jsdocTag": "GenerateBuilder",
+  "outputDir": "generated-builders/",
+  "defaults": {
+    "boolean": true,
+    "number": 2000,
+    "string": "foo"
+  }
 }

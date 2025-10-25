@@ -5,7 +5,7 @@ import * as Schema from 'effect/Schema';
 import { CliConfigurationSchema } from './configuration';
 
 // TODO: options for: type union priorities
-const jsdocTag = Options.text('jsdocTag').pipe(
+const jsdocTag = Options.text('jsdoc-tag').pipe(
   Options.withDescription(
     'JSDoc tag used to mark types for data building generation.',
   ),
