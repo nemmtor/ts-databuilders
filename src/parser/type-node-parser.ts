@@ -1,16 +1,17 @@
-import { randomUUID } from 'node:crypto';
 import * as Data from 'effect/Data';
 import * as Effect from 'effect/Effect';
 import * as Match from 'effect/Match';
 import * as Option from 'effect/Option';
 import { Node, SyntaxKind, type Type, type TypeNode } from 'ts-morph';
 import { Configuration } from '../configuration';
+import { RandomUUID } from '../randomUUID';
 
 export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
   '@TSDataBuilders/TypeNodeParser',
   {
     effect: Effect.gen(function* () {
       const { jsdocTag } = yield* Configuration;
+      const randomUUID = yield* RandomUUID;
 
       const resolveObjectTypeToMetadata = (opts: {
         type: Type;
@@ -38,7 +39,7 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
             const tempSource = contextNode
               .getProject()
               .createSourceFile(
-                `__temp_${randomUUID()}.ts`,
+                `__temp_${yield* randomUUID.generate}.ts`,
                 `type __T = ${propType.getText()}`,
                 { overwrite: true },
               );
@@ -68,10 +69,7 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
         optional: boolean;
       }): Effect.Effect<
         TypeNodeMetadata,
-        | UnsupportedSyntaxKindError
-        | MultipleSymbolDeclarationsError
-        | MissingSymbolDeclarationError
-        | CannotBuildTypeReferenceMetadata
+        UnsupportedSyntaxKindError | CannotBuildTypeReferenceMetadata
       > =>
         Effect.gen(function* () {
           const { typeNode, optional } = opts;
@@ -163,16 +161,18 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                 const symbol = type.getSymbol();
 
                 if (!symbol) {
-                  throw new Error('TODO: missing symbol');
+                  return yield* Effect.die(new MissingSymbolError());
                 }
 
                 const declarations = symbol.getDeclarations();
                 if (declarations && declarations.length > 1) {
-                  return yield* new MultipleSymbolDeclarationsError();
+                  return yield* Effect.die(
+                    new MultipleSymbolDeclarationsError(),
+                  );
                 }
                 const [declaration] = declarations;
                 if (!declaration) {
-                  return yield* new MissingSymbolDeclarationError();
+                  return yield* Effect.die(new MissingSymbolDeclarationError());
                 }
 
                 // Try to resolve as object type
@@ -280,11 +280,13 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
 
                 const declarations = sym.getDeclarations();
                 if (declarations && declarations.length > 1) {
-                  return yield* new MultipleSymbolDeclarationsError();
+                  return yield* Effect.die(
+                    new MultipleSymbolDeclarationsError(),
+                  );
                 }
                 const [declaration] = declarations;
                 if (!declaration) {
-                  return yield* new MissingSymbolDeclarationError();
+                  return yield* Effect.die(new MissingSymbolDeclarationError());
                 }
 
                 const hasBuilder = sym
@@ -293,8 +295,8 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                   .includes(jsdocTag);
 
                 if (!Node.isTypeAliasDeclaration(declaration)) {
-                  throw new Error(
-                    'TODO: for non-type-alias declarations (interfaces, etc.)',
+                  return yield* Effect.die(
+                    new UnsupportedTypeAliasDeclaration(),
                   );
                 }
 
@@ -370,7 +372,10 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                   };
                 }
 
-                throw new Error('TODO: handle it');
+                return yield* new UnsupportedSyntaxKindError({
+                  kind,
+                  raw: typeNode.getText(),
+                });
               }),
             ),
 
@@ -392,6 +397,7 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
         generateMetadata,
       };
     }),
+    dependencies: [RandomUUID.Default],
   },
 ) {}
 
@@ -408,6 +414,12 @@ class MultipleSymbolDeclarationsError extends Data.TaggedError(
 
 class MissingSymbolDeclarationError extends Data.TaggedError(
   'MissingSymbolDeclarationError',
+) {}
+
+class MissingSymbolError extends Data.TaggedError('MissingSymbolError') {}
+
+class UnsupportedTypeAliasDeclaration extends Data.TaggedError(
+  'UnsupportedTypeAliasDeclaration',
 ) {}
 
 class CannotBuildTypeReferenceMetadata extends Data.TaggedError(

@@ -16,11 +16,11 @@ export class Builders extends Effect.Service<Builders>()(
         create: Effect.fnUntraced(function* (
           buildersMetadata: DataBuilderMetadata[],
         ) {
-          const exists = yield* fs.exists(outputDir);
+          const exists = yield* Effect.orDie(fs.exists(outputDir));
           if (exists) {
-            yield* fs.remove(outputDir, { recursive: true });
+            yield* Effect.orDie(fs.remove(outputDir, { recursive: true }));
           }
-          yield* fs.makeDirectory(outputDir, { recursive: true });
+          yield* Effect.orDie(fs.makeDirectory(outputDir, { recursive: true }));
 
           yield* builderGenerator.generateBaseBuilder();
 

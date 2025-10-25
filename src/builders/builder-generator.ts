@@ -1,4 +1,4 @@
-import path from 'node:path';
+import { Path } from '@effect/platform';
 import * as FileSystem from '@effect/platform/FileSystem';
 import * as Effect from 'effect/Effect';
 import * as Match from 'effect/Match';
@@ -13,6 +13,7 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
   {
     effect: Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;
+      const path = yield* Path.Path;
       const { outputDir, fileSuffix, builderSuffix, defaults } =
         yield* Configuration;
 
@@ -81,7 +82,9 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
       return {
         generateBaseBuilder: Effect.fnUntraced(function* () {
           const baseBuilderPath = path.resolve(outputDir, 'data-builder.ts');
-          yield* fs.writeFileString(baseBuilderPath, BASE_BUILDER_CONTENT);
+          yield* Effect.orDie(
+            fs.writeFileString(baseBuilderPath, BASE_BUILDER_CONTENT),
+          );
         }),
         generateBuilder: Effect.fnUntraced(function* (
           builderMetadata: DataBuilderMetadata,

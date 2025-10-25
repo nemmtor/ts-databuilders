@@ -15,7 +15,7 @@ export class Parser extends Effect.Service<Parser>()('@TSDataBuilders/Parser', {
     return {
       generateBuildersMetadata: Effect.fnUntraced(
         function* (path: string) {
-          const sourceCode = yield* fs.readFileString(path);
+          const sourceCode = yield* Effect.orDie(fs.readFileString(path));
           const eitherTypeLiteralsWithDataBuilder = yield* Effect.try({
             try: () => {
               const project = new Project();

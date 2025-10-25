@@ -1,22 +1,20 @@
 import * as Command from '@effect/cli/Command';
 import * as Layer from 'effect/Layer';
-import { Builders } from './builders';
+import * as Builders from './builders';
 import { options } from './cli-options';
 import * as Configuration from './configuration';
-import { Finder } from './finder';
-import { Parser } from './parser';
+import * as Finder from './finder';
+import * as Parser from './parser';
 import { program } from './program';
-import { TreeWalker } from './tree-walker';
 
 const databuilderCommand = Command.make('ts-databuilders', options);
 export const cli = databuilderCommand.pipe(
   Command.withHandler(() => program),
   Command.provide((providedOptions) =>
     Layer.mergeAll(
-      Finder.Default,
-      Parser.Default,
-      Builders.Default,
-      TreeWalker.Default,
+      Finder.Finder.Default,
+      Parser.Parser.Default,
+      Builders.Builders.Default,
     ).pipe(
       Layer.provide(
         Layer.effect(

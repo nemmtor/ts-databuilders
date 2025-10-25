@@ -10,37 +10,40 @@ import { FileContentChecker } from './file-content-checker';
 export class Finder extends Effect.Service<Finder>()('@TSDataBuilders/Finder', {
   effect: Effect.gen(function* () {
     const fileContentChecker = yield* FileContentChecker;
+    const treeWalker = yield* TreeWalker;
     const { include, jsdocTag } = yield* Configuration;
     const decorator = `@${jsdocTag}`;
 
     return {
-      find: Effect.fnUntraced(function* () {
-        const treeWalker = yield* TreeWalker;
-        const pathsStream = treeWalker.walk(include);
+      find: Effect.fnUntraced(
+        function* () {
+          const pathsStream = treeWalker.walk(include);
 
-        const fileNamesWithContent = yield* pathsStream.pipe(
-          Stream.mapEffect(
-            (filePath) =>
-              fileContentChecker
-                .check({ filePath, content: decorator })
-                .pipe(
-                  Effect.map(
-                    Chunk.map((v) =>
-                      v ? Option.some(filePath) : Option.none(),
+          const fileNamesWithContent = yield* pathsStream.pipe(
+            Stream.mapEffect(
+              (filePath) =>
+                fileContentChecker
+                  .check({ filePath, content: decorator })
+                  .pipe(
+                    Effect.map(
+                      Chunk.map((v) =>
+                        v ? Option.some(filePath) : Option.none(),
+                      ),
                     ),
                   ),
-                ),
-            { concurrency: 'unbounded' },
-          ),
-          Stream.runCollect,
-          Effect.map(Chunk.flatMap(Function.identity)),
-          Effect.map(Chunk.filter((v) => Option.isSome(v))),
-          Effect.map(Chunk.map((v) => v.value)),
-        );
+              { concurrency: 'unbounded' },
+            ),
+            Stream.runCollect,
+            Effect.map(Chunk.flatMap(Function.identity)),
+            Effect.map(Chunk.filter((v) => Option.isSome(v))),
+            Effect.map(Chunk.map((v) => v.value)),
+          );
 
-        return fileNamesWithContent;
-      }),
+          return fileNamesWithContent;
+        },
+        Effect.catchTag('TreeWalkerError', (cause) => Effect.die(cause)),
+      ),
     };
   }),
-  dependencies: [FileContentChecker.Default],
+  dependencies: [TreeWalker.Default, FileContentChecker.Default],
 }) {}

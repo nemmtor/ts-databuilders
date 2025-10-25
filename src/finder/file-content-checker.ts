@@ -15,9 +15,11 @@ export class FileContentChecker extends Effect.Service<FileContentChecker>()(
           content: string;
         }) {
           const { content, filePath } = opts;
-          const fileContentStream = fs.stream(filePath, {
-            chunkSize: 16 * 1024,
-          });
+          const fileContentStream = Stream.orDie(
+            fs.stream(filePath, {
+              chunkSize: 16 * 1024,
+            }),
+          );
           const result = yield* fileContentStream.pipe(
             Stream.map((buffer) => decoder.decode(buffer, { stream: true })),
             Stream.mapAccum('', (leftover, chunk) => {

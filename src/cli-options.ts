@@ -1,8 +1,8 @@
 import * as Options from '@effect/cli/Options';
+import { Option } from 'effect';
 import * as HashMap from 'effect/HashMap';
 import * as Schema from 'effect/Schema';
 import { CliConfigurationSchema } from './configuration';
-import { Option } from 'effect';
 
 // TODO: options for: type union priorities
 const jsdocTag = Options.text('jsdocTag').pipe(

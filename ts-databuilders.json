@@ -1,7 +1,3 @@
 {
-  "include": "example-data/**",
-  "defaults": {
-    "number": 10,
-    "boolean": false
-  }
+  "include": "example-data/**"
 }

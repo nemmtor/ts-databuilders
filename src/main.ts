@@ -6,6 +6,6 @@ import * as Layer from 'effect/Layer';
 import { cli } from './cli';
 import * as Process from './process';
 
-const MainLive = Layer.mergeAll(Process.layer, NodeContext.layer);
+const MainLive = Layer.mergeAll(Process.Process.Default, NodeContext.layer);
 
 cli(process.argv).pipe(Effect.provide(MainLive), NodeRuntime.runMain);
