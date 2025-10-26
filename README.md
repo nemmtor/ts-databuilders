@@ -1,6 +1,114 @@
 # 🧱 TS DataBuilders
 Automatically generate type-safe builder classes from your TypeScript types to write cleaner, more focused tests.
 
+## Installation
+Install the package:
+```bash
+# npm
+npm install -D @nemmtor/ts-databuilders
+
+# pnpm
+pnpm add -D @nemmtor/ts-databuilders
+
+# yarn
+yarn add -D @nemmtor/ts-databuilders
+```
+
+## Configuration
+All configuration is optional with sensible defaults.
+
+### Initialize Config File (optional)
+Generate a default `ts-databuilders.json` configuration file:
+```bash
+pnpm ts-databuilders init
+```
+You can also generate configuration file by providing values step by step in an interactive wizard:
+```bash
+pnpm ts-databuilders init --wizard
+```
+
+### Configure via CLI flags (optional:
+```bash
+pnpm ts-databuilders --output-dir="src/__generated__" --jsdoc-tag=MyBuilder
+```
+You can also provide configuration by going through interactive wizard:
+```bash
+pnpm ts-databuilders --wizard
+```
+
+### Options Reference
+
+| Name          | Flag                                                  | Description                             | Default              |
+|---------------|-------------------------------------------------------|-----------------------------------------|----------------------|
+| jsdocTag      | `--jsdoc-tag`                                         | JSDoc tag to mark types for generation  | `DataBuilder`        |
+| outputDir     | `--output-dir -o`                                     | Output directory for generated builders | `generated/builders` |
+| include       | `--include -i`                                        | Glob pattern for source files           | `src/**/*.ts{,x}`    |
+| fileSuffix    | `--file-suffix`                                       | File suffix for builder files           | `.builder`           |
+| builderSuffix | `--builder-suffix`                                    | Class name suffix                       | `Builder`            |
+| defaults      | `--default-string --default-number --default-boolean` | Default values for primitives           | See example above    |
+
+**Priority:** CLI flags > Config file > Built-in defaults
+
+## Quick Start
+**1. Annotate your types with JSDoc:**
+```ts
+/**
+ * @DataBuilder
+ */
+type User = {
+  id: string;
+  email: string;
+  name: string;
+  isActive: boolean;
+}
+```
+**2. Generate builders:**
+```bash
+pnpm ts-databuilders
+```
+For the `User` type above, you'll get:
+```ts
+import type { User } from "...";
+import { DataBuilder } from "./data-builder";
+
+export class UserBuilder extends DataBuilder<User> {
+    constructor() {
+        super({
+          id: "",
+          email: "",
+          name: "",
+          isActive: false
+        });
+    }
+
+    withId(id: User['id']) {
+        return this.with({ id });
+    }
+
+    withEmail(email: User['email']) {
+        return this.with({ email });
+    }
+
+    withName(name: User['name']) {
+        return this.with({ name });
+    }
+
+    withIsActive(isActive: User['isActive']) {
+        return this.with({ isActive });
+    }
+}
+```
+
+**3. Use in your tests:**
+```ts
+import { UserBuilder } from '...';
+
+const testUser = new UserBuilder()
+  .withEmail('test@example.com')
+  .withIsActive(false)
+  .build();
+```
+
 ## Why?
 Tests often become cluttered with boilerplate when you need to create complex objects just to test one specific field. DataBuilders let you focus on what matters:
 Imagine testing a case where document aggregate should emit an event when it successfully update it's content:
@@ -19,7 +127,7 @@ it('should emit a ContentUpdatedEvent', () => {
   expect(...);
 })
 ```
-Above code obfuscated with all of the default values you need to provide in order to satisfy typescript.
+Above code is obfuscated with all of the default values you need to provide in order to satisfy typescript.
 Where in reality the only thing specific to this single test is the fact that some new content was provided to `updateContent` method.
 
 Imagine even more complex scenario:
@@ -77,113 +185,7 @@ it('should show validation error when email is invalid', async () => {
 
 This not only makes the test code less verbose but also highlights what is really being tested.
 
-## Installation
-Install the package:
-```bash
-# npm
-npm install -D @nemmtor/ts-databuilders
-
-# pnpm
-pnpm add -D @nemmtor/ts-databuilders
-
-# yarn
-yarn add -D @nemmtor/ts-databuilders
-```
-
-## Quick Start
-**1. Annotate your types with JSDoc:**
-```ts
-/**
- * @DataBuilder
- */
-type User = {
-  id: string;
-  email: string;
-  name: string;
-  isActive: boolean;
-}
-```
-**2. Generate builders:**
-```bash
-pnpm ts-databuilders
-```
-**3. Use in your tests:**
-```ts
-import { UserBuilder } from '...';
-
-const testUser = new UserBuilder()
-  .withEmail('test@example.com')
-  .withIsActive(false)
-  .build();
-```
-## Generated Output
-
-For the `User` type above, you'll get:
-```ts
-import type { User } from "...";
-import { DataBuilder } from "./data-builder";
-
-export class UserBuilder extends DataBuilder<User> {
-    constructor() {
-        super({
-          id: "",
-          email: "",
-          name: "",
-          isActive: false
-        });
-    }
-
-    withId(id: User['id']) {
-        return this.with({ id });
-    }
-
-    withEmail(email: User['email']) {
-        return this.with({ email });
-    }
-
-    withName(name: User['name']) {
-        return this.with({ name });
-    }
-
-    withIsActive(isActive: User['isActive']) {
-        return this.with({ isActive });
-    }
-}
-```
-## Configuration
-All configuration is optional with sensible defaults.
-
-### Initialize Config File (optional)
-Generate a default `ts-databuilders.json` configuration file:
-```bash
-pnpm ts-databuilders init
-```
-You can also generate configuration file by providing values step by step in an interactive wizard:
-```bash
-pnpm ts-databuilders init --wizard
-```
-
-### Configure via CLI flags (optional:
-```bash
-pnpm ts-databuilders --output-dir="src/__generated__" --jsdoc-tag=MyBuilder
-```
-You can also provide configuration by going through interactive wizard:
-```bash
-pnpm ts-databuilders --wizard
-```
-
-### Options Reference
-
-| Name          | Flag                                                  | Description                             | Default              |
-|---------------|-------------------------------------------------------|-----------------------------------------|----------------------|
-| jsdocTag      | `--jsdoc-tag`                                         | JSDoc tag to mark types for generation  | `DataBuilder`        |
-| outputDir     | `--output-dir -o`                                     | Output directory for generated builders | `generated/builders` |
-| include       | `--include -i`                                        | Glob pattern for source files           | `src/**/*.ts{,x}`    |
-| fileSuffix    | `--file-suffix`                                       | File suffix for builder files           | `.builder`           |
-| builderSuffix | `--builder-suffix`                                    | Class name suffix                       | `Builder`            |
-| defaults      | `--default-string --default-number --default-boolean` | Default values for primitives           | See example above    |
-
-**Priority:** CLI flags > Config file > Built-in defaults
+[Read more about data builders.](http://www.natpryce.com/articles/000714.html)
 
 ## Nested Builders
 When your types contain complex nested objects, you can annotate their type definitions and TS DataBuilders will automatically generate nested builders, allowing you to compose them fluently.
@@ -375,23 +377,17 @@ Some TypeScript features are not yet supported and will cause generation errors:
 
 - typeof, keyof, any, unknown, bigint, symbol
 
-If you encounter an unsupported type, you'll see an error like:
-```
-Unsupported syntax kind of id: XXX with raw type: YYY
-```
-Support for above might be added in future.
-
 ### Alpha Stage
-⚠️ **This library is in active development (v0.x.x)**
+⚠️ **This library is in active development**
 
-- Breaking changes may occur between minor versions
+- Breaking changes may occur
 - Not all edge cases are covered yet
 - Test thoroughly before using in production
 
 **Found an issue?** Please [report it on GitHub](https://github.com/nemmtor/ts-databuilders/issues) with:
 - The type definition causing the issue
 - The error message received
-- Your `ts-databuilders.json` config (if applicable)
+- Your `ts-databuilders.json` config and any provided CLI flags (if applicable)
 
 Your feedback helps improve the library for everyone! 🙏
 
