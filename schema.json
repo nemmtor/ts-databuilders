@@ -1,50 +1,50 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$defs": {
-    "NonEmptyTrimmedString": {
-      "type": "string",
-      "description": "a non empty string",
-      "title": "nonEmptyString",
-      "pattern": "^\\S[\\s\\S]*\\S$|^\\S$|^$",
-      "minLength": 1
-    }
-  },
   "type": "object",
   "required": [],
   "properties": {
-    "jsdocTag": {
-      "$ref": "#/$defs/NonEmptyTrimmedString"
-    },
-    "outputDir": {
-      "$ref": "#/$defs/NonEmptyTrimmedString"
-    },
-    "include": {
-      "$ref": "#/$defs/NonEmptyTrimmedString"
-    },
-    "fileSuffix": {
-      "$ref": "#/$defs/NonEmptyTrimmedString"
-    },
-    "builderSuffix": {
-      "$ref": "#/$defs/NonEmptyTrimmedString"
-    },
     "$schema": {
       "type": "string"
+    },
+    "jsdocTag": {
+      "type": "string",
+      "description": "JSDoc tag used to mark types for data building generation."
+    },
+    "outputDir": {
+      "type": "string",
+      "description": "Output directory for generated builders."
+    },
+    "include": {
+      "type": "string",
+      "description": "Glob pattern for files included while searching for jsdoc tag."
+    },
+    "fileSuffix": {
+      "type": "string",
+      "description": "File suffix for created builder files."
+    },
+    "builderSuffix": {
+      "type": "string",
+      "description": "Suffix for generated classes."
     },
     "defaults": {
       "type": "object",
       "required": [],
       "properties": {
         "string": {
-          "type": "string"
+          "type": "string",
+          "description": "Default string value to be used in data builder constructor."
         },
         "number": {
-          "type": "number"
+          "type": "number",
+          "description": "Default number value to be used in data builder constructor."
         },
         "boolean": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "Default boolean value to be used in data builder constructor."
         }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "Default values to be used in data builder constructor."
     }
   },
   "additionalProperties": false

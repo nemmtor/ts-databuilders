@@ -1,10 +1,11 @@
-import { Path } from '@effect/platform';
 import * as FileSystem from '@effect/platform/FileSystem';
+import * as Path from '@effect/platform/Path';
 import * as Effect from 'effect/Effect';
 import * as Match from 'effect/Match';
 import { Project } from 'ts-morph';
 import { Configuration } from '../configuration';
 import type { DataBuilderMetadata, TypeNodeMetadata } from '../parser';
+import * as Process from '../process';
 import { toKebabCase } from '../utils';
 import { createBuilderMethod } from './create-builder-method';
 
@@ -14,8 +15,9 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
     effect: Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;
       const path = yield* Path.Path;
-      const { outputDir, fileSuffix, builderSuffix, defaults } =
-        yield* Configuration;
+      const process = yield* Process.Process;
+      const configuration = yield* Configuration;
+      const { fileSuffix, builderSuffix, defaults } = configuration;
 
       const getDefaultValueLiteral = (
         typeNodeMetadata: TypeNodeMetadata,
@@ -81,7 +83,14 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
 
       return {
         generateBaseBuilder: Effect.fnUntraced(function* () {
+          const outputDir = path.join(
+            yield* process.cwd,
+            configuration.outputDir,
+          );
           const baseBuilderPath = path.resolve(outputDir, 'data-builder.ts');
+          yield* Effect.logDebug(
+            `[Builders]: Creating base builder at ${baseBuilderPath}`,
+          );
           yield* Effect.orDie(
             fs.writeFileString(baseBuilderPath, BASE_BUILDER_CONTENT),
           );
@@ -91,10 +100,21 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
         ) {
           const project = new Project();
           const typeName = builderMetadata.name;
+          yield* Effect.logDebug(
+            `[Builders]: Creating builder for ${typeName}`,
+          );
+
+          const outputDir = path.join(
+            yield* process.cwd,
+            configuration.outputDir,
+          );
 
           const builderFilePath = path.resolve(
             outputDir,
             `${toKebabCase(typeName)}${fileSuffix}.ts`,
+          );
+          yield* Effect.logDebug(
+            `[Builders]: Creating builder file at ${builderFilePath}`,
           );
 
           const file = project.createSourceFile(builderFilePath, '', {
@@ -166,6 +186,9 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
             ],
           });
 
+          yield* Effect.logDebug(
+            `[Builders]: Saving builder content at ${builderFilePath}`,
+          );
           file.saveSync();
         }),
       };

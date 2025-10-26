@@ -17,7 +17,11 @@ export class Finder extends Effect.Service<Finder>()('@TSDataBuilders/Finder', {
     return {
       find: Effect.fnUntraced(
         function* () {
-          const pathsStream = treeWalker.walk(include);
+          yield* Effect.logDebug(
+            '[Finder]: Attempting to find files with builders',
+          );
+
+          const pathsStream = yield* treeWalker.walk(include);
 
           const fileNamesWithContent = yield* pathsStream.pipe(
             Stream.mapEffect(
@@ -39,6 +43,9 @@ export class Finder extends Effect.Service<Finder>()('@TSDataBuilders/Finder', {
             Effect.map(Chunk.map((v) => v.value)),
           );
 
+          yield* Effect.logDebug(
+            `[Finder]: Found builders in files: ${fileNamesWithContent.pipe(Chunk.toArray).join(', ')}`,
+          );
           return fileNamesWithContent;
         },
         Effect.catchTag('TreeWalkerError', (cause) => Effect.die(cause)),

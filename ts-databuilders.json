@@ -1,4 +1,14 @@
 {
   "$schema": "https://raw.githubusercontent.com/nemmtor/ts-databuilders/refs/heads/main/schema.json",
-  "include": "example-data/**"
+  "jsdocTag": "DataBuilder",
+  "outputDir": "generated/builders",
+  "include": "example-data/**",
+  "fileSuffix": ".builder",
+  "builderSuffix": "Builder",
+  "defaults": {
+    "string": "",
+    "number": 0,
+    "boolean": false
+  }
 }
+

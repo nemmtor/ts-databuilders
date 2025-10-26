@@ -1,6 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
   "name": "@nemmtor/ts-databuilders",
+  "version": "0.0.1-alpha.6",
   "type": "module",
   "private": false,
   "description": "CLI tool that automatically generates builder classes from annotated TypeScript types.",
@@ -27,7 +28,7 @@
   ],
   "scripts": {
     "build:node": "bun build src/main.ts --target node --outfile dist/main.js --production --packages external",
-    "start": "bun --console-depth 10 src/main.ts",
+    "start": "bun src/main.ts",
     "format": "biome format",
     "format:fix": "biome format --write",
     "lint": "biome lint",
@@ -57,6 +58,5 @@
     "effect": "^3.18.4",
     "glob": "^11.0.3",
     "ts-morph": "^27.0.2"
-  },
-  "version": "0.0.1-alpha.6"
+  }
 }

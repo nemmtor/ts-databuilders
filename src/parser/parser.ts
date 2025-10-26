@@ -15,6 +15,11 @@ export class Parser extends Effect.Service<Parser>()('@TSDataBuilders/Parser', {
     return {
       generateBuildersMetadata: Effect.fnUntraced(
         function* (path: string) {
+          yield* Effect.logDebug(
+            `[Parser](${path}): Generating builder metadata`,
+          );
+
+          yield* Effect.logDebug(`[Parser](${path}): Reading source code`);
           const sourceCode = yield* Effect.orDie(fs.readFileString(path));
           const eitherTypeLiteralsWithDataBuilder = yield* Effect.try({
             try: () => {
@@ -70,6 +75,11 @@ export class Parser extends Effect.Service<Parser>()('@TSDataBuilders/Parser', {
 
           const typeLiteralsWithDataBuilder = yield* Effect.all(
             eitherTypeLiteralsWithDataBuilder.map((v) => v),
+            { concurrency: 'unbounded' },
+          );
+
+          yield* Effect.logDebug(
+            `[Parser](${path}): Generating metadata for types: ${typeLiteralsWithDataBuilder.map(({ name }) => name).join(', ')}`,
           );
 
           const result: DataBuilderMetadata[] = yield* Effect.all(
@@ -77,6 +87,11 @@ export class Parser extends Effect.Service<Parser>()('@TSDataBuilders/Parser', {
               typeNodeParser
                 .generateMetadata({ typeNode: node, optional: false })
                 .pipe(
+                  Effect.tap(() =>
+                    Effect.logDebug(
+                      `[Parser](${path}): Finished generating metadata for type: ${name}`,
+                    ),
+                  ),
                   Effect.map((shape) => ({ name, shape, path })),
                   Effect.catchTags({
                     UnsupportedSyntaxKindError: (cause) =>
@@ -100,6 +115,7 @@ export class Parser extends Effect.Service<Parser>()('@TSDataBuilders/Parser', {
                   }),
                 ),
             ),
+            { concurrency: 'unbounded' },
           );
 
           return result;
@@ -108,19 +124,19 @@ export class Parser extends Effect.Service<Parser>()('@TSDataBuilders/Parser', {
           ParserError: (cause) => Effect.die(cause),
           UnexportedDatabuilderError: (cause) =>
             Effect.dieMessage(
-              `[Parser]: Unexported databuilder ${cause.typeName} at ${cause.path}`,
+              `[Parser](${cause.path}): Unexported databuilder ${cause.typeName}`,
             ),
           RichUnsupportedSyntaxKindError: (cause) =>
             Effect.dieMessage(
-              `[Parser]: Unsupported syntax kind of id: ${cause.kind} with raw type: ${cause.raw} found in type ${cause.typeName} in file ${cause.path}`,
+              `[Parser](${cause.path}): Unsupported syntax kind of id: ${cause.kind} with raw type: ${cause.raw} found in type ${cause.typeName}`,
             ),
           RichCannotBuildTypeReferenceMetadata: (cause) =>
             Effect.dieMessage(
-              `[Parser]: Cannot build type reference metadata with kind of id: ${cause.kind} with raw type: ${cause.raw} found in type ${cause.typeName} in file ${cause.path}. Is it a root of databuilder?`,
+              `[Parser](${cause.path}): Cannot build type reference metadata with kind of id: ${cause.kind} with raw type: ${cause.raw} found in type ${cause.typeName}. Is it a root of databuilder?`,
             ),
           UnsupportedBuilderTypeError: (cause) =>
             Effect.dieMessage(
-              `[Parser]: Unsupported builder type ${cause.typeName} in file ${cause.path}.`,
+              `[Parser](${cause.path}): Unsupported builder type ${cause.typeName}`,
             ),
         }),
       ),

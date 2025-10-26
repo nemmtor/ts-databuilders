@@ -4,9 +4,11 @@ import * as Context from 'effect/Context';
 import * as Effect from 'effect/Effect';
 import * as Option from 'effect/Option';
 import * as Schema from 'effect/Schema';
+import { DESCRIPTIONS } from './descriptions';
 import * as Process from './process';
+import { removeUndefinedFields } from './utils/remove-undefined-fields';
 
-const CONFIG_FILE_NAME = 'ts-databuilders.json';
+export const CONFIG_FILE_NAME = 'ts-databuilders.json';
 
 const ConfigurationSchema = Schema.Struct({
   jsdocTag: Schema.NonEmptyTrimmedString,
@@ -21,7 +23,7 @@ const ConfigurationSchema = Schema.Struct({
   }),
 });
 
-const DEFAULT_CONFIGURATION = ConfigurationSchema.make({
+export const DEFAULT_CONFIGURATION = ConfigurationSchema.make({
   jsdocTag: 'DataBuilder',
   outputDir: 'generated/builders',
   include: 'src/**/*.ts{,x}',
@@ -35,20 +37,39 @@ const DEFAULT_CONFIGURATION = ConfigurationSchema.make({
 });
 type ConfigurationShape = typeof ConfigurationSchema.Type;
 
-export const ConfigurationFileSchema = ConfigurationSchema.pipe(
-  Schema.omit('defaults'),
-  Schema.extend(
-    Schema.Struct({
-      $schema: Schema.optional(Schema.String),
-      defaults: Schema.Struct({
-        string: Schema.String,
-        number: Schema.Number,
-        boolean: Schema.Boolean,
-      }).pipe(Schema.partial),
-    }),
+export const ConfigurationFileSchema = Schema.Struct({
+  $schema: Schema.optional(Schema.String),
+  jsdocTag: Schema.String.pipe(
+    Schema.annotations({ description: DESCRIPTIONS.jsdocTag }),
   ),
-  Schema.partial,
-);
+  outputDir: Schema.String.pipe(
+    Schema.annotations({ description: DESCRIPTIONS.outputDir }),
+  ),
+  include: Schema.String.pipe(
+    Schema.annotations({ description: DESCRIPTIONS.include }),
+  ),
+  fileSuffix: Schema.String.pipe(
+    Schema.annotations({ description: DESCRIPTIONS.fileSuffix }),
+  ),
+  builderSuffix: Schema.String.pipe(
+    Schema.annotations({ description: DESCRIPTIONS.builderSuffix }),
+  ),
+  defaults: Schema.Struct({
+    string: Schema.String.pipe(
+      Schema.annotations({ description: DESCRIPTIONS.defaultString }),
+    ),
+    number: Schema.Number.pipe(
+      Schema.annotations({ description: DESCRIPTIONS.defaultNumber }),
+    ),
+    boolean: Schema.Boolean.pipe(
+      Schema.annotations({ description: DESCRIPTIONS.defaultBoolean }),
+    ),
+  }).pipe(
+    Schema.partial,
+    Schema.annotations({ description: DESCRIPTIONS.defaults }),
+  ),
+}).pipe(Schema.partial);
+
 type ConfigurationFileShape = typeof ConfigurationFileSchema.Type;
 
 export class Configuration extends Context.Tag('Configuration')<
@@ -62,64 +83,57 @@ export const CliConfigurationSchema = Schema.Struct({
   include: Schema.NonEmptyTrimmedString,
   fileSuffix: Schema.NonEmptyTrimmedString,
   builderSuffix: Schema.NonEmptyTrimmedString,
-  defaults: Schema.Struct({
-    string: Schema.String,
-    number: Schema.Number,
-    boolean: Schema.Boolean,
-  }).pipe(Schema.partial),
+  defaultString: Schema.String,
+  defaultNumber: Schema.NumberFromString,
+  defaultBoolean: Schema.BooleanFromString,
 });
-type CliConfigurationShape = typeof CliConfigurationSchema.Type;
 
-type LoadConfigurationOptions = {
-  [key in keyof CliConfigurationShape]: Option.Option<
-    CliConfigurationShape[key]
+export type CliConfigurationShape = {
+  [key in keyof typeof CliConfigurationSchema.Type]: Option.Option<
+    (typeof CliConfigurationSchema.Type)[key]
   >;
 };
 
-export const load = (opts: LoadConfigurationOptions) =>
+export const load = (opts: CliConfigurationShape) =>
   Effect.gen(function* () {
+    yield* Effect.logDebug('[Configuration]: Loading configuration');
     const process = yield* Process.Process;
     const cwd = yield* process.cwd;
     const path = yield* Path.Path;
     const configPath = path.join(cwd, CONFIG_FILE_NAME);
     const configFileContent = yield* readConfigFileContent(configPath);
     const config = yield* resolveConfig({
-      providedConfiguration: opts,
-      configFileContent,
+      fromCLI: opts,
+      fromConfigFile: configFileContent,
     });
     return Configuration.of(config);
   });
 
 const resolveConfig = (opts: {
-  providedConfiguration: LoadConfigurationOptions;
-  configFileContent: Option.Option<ConfigurationFileShape>;
+  fromCLI: CliConfigurationShape;
+  fromConfigFile: Option.Option<ConfigurationFileShape>;
 }): Effect.Effect<ConfigurationShape> =>
   Effect.gen(function* () {
     const resolve = resolveConfigValue(opts);
 
-    const defaultsFromCli = opts.providedConfiguration.defaults.pipe(
+    const defaultsFromFile = Option.flatMap(
+      opts.fromConfigFile,
+      (fileContent) => Option.fromNullable(fileContent.defaults),
+    ).pipe(
+      Option.map((v) => removeUndefinedFields(v)),
       Option.getOrElse(() => ({})),
     );
-    const defaultsFromFile = Option.flatMap(
-      opts.configFileContent,
-      (fileContent) => Option.fromNullable(fileContent.defaults),
-    ).pipe(Option.getOrElse(() => ({})));
-    const providedDefaultsFromCli = Object.fromEntries(
-      Object.entries(defaultsFromCli).filter(
-        ([_, v]) => typeof v !== 'undefined',
-      ),
-    );
-    const providedDefaultsFromFile = Object.fromEntries(
-      Object.entries(defaultsFromFile).filter(
-        ([_, v]) => typeof v !== 'undefined',
-      ),
-    );
+    const defaultsFromCLI = removeUndefinedFields({
+      string: opts.fromCLI.defaultString.pipe(Option.getOrUndefined),
+      number: opts.fromCLI.defaultNumber.pipe(Option.getOrUndefined),
+      boolean: opts.fromCLI.defaultBoolean.pipe(Option.getOrUndefined),
+    });
     const providedDefaults = {
-      ...providedDefaultsFromFile,
-      ...providedDefaultsFromCli,
+      ...defaultsFromFile,
+      ...defaultsFromCLI,
     };
 
-    return {
+    const config = {
       builderSuffix: yield* resolve('builderSuffix'),
       include: yield* resolve('include'),
       fileSuffix: yield* resolve('fileSuffix'),
@@ -130,17 +144,22 @@ const resolveConfig = (opts: {
         ...providedDefaults,
       },
     };
+
+    yield* Effect.logDebug(
+      `[Configuration]: Resolving config with value: ${JSON.stringify(config, null, 4)}`,
+    );
+    return config;
   });
 
 const resolveConfigValue =
   (opts: {
-    providedConfiguration: LoadConfigurationOptions;
-    configFileContent: Option.Option<ConfigurationFileShape>;
+    fromCLI: CliConfigurationShape;
+    fromConfigFile: Option.Option<ConfigurationFileShape>;
   }) =>
   <K extends keyof ConfigurationShape>(key: K) =>
-    opts.providedConfiguration[key].pipe(
+    opts.fromCLI[key].pipe(
       Effect.orElse(() =>
-        Option.flatMap(opts.configFileContent, (fileContent) =>
+        Option.flatMap(opts.fromConfigFile, (fileContent) =>
           Option.fromNullable(fileContent[key]),
         ),
       ),
@@ -152,12 +171,16 @@ const readConfigFileContent = (path: string) =>
     const fs = yield* FileSystem.FileSystem;
     const exists = yield* Effect.orDie(fs.exists(path));
     if (exists) {
+      yield* Effect.logDebug(
+        '[Configuration]: Found config file - attempting to read it',
+      );
       const jsonFileContent = yield* readJsonFile(path);
       const configFileContent = yield* Schema.decodeUnknown(
         ConfigurationFileSchema,
       )(jsonFileContent);
       return Option.some(configFileContent);
     } else {
+      yield* Effect.logDebug('[Configuration]: No config file found');
       return Option.none();
     }
   });

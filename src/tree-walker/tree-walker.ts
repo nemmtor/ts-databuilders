@@ -2,18 +2,25 @@ import * as Data from 'effect/Data';
 import * as Effect from 'effect/Effect';
 import * as Stream from 'effect/Stream';
 import { glob } from 'glob';
+import * as Process from '../process';
 
 export class TreeWalker extends Effect.Service<TreeWalker>()(
   '@TSDataBuilders/TreeWalker',
   {
-    succeed: {
-      walk: (path: string) => {
-        return Stream.fromAsyncIterable(
-          glob.stream(path, { cwd: '.', nodir: true }),
-          (cause) => new TreeWalkerError({ cause }),
-        );
-      },
-    },
+    effect: Effect.gen(function* () {
+      const process = yield* Process.Process;
+      return {
+        walk: Effect.fnUntraced(function* (path: string) {
+          const cwd = yield* process.cwd;
+          yield* Effect.logDebug(`[TreeWalker]: Walking path: ${cwd}/${path}`);
+
+          return Stream.fromAsyncIterable(
+            glob.stream(path, { cwd, nodir: true }),
+            (cause) => new TreeWalkerError({ cause }),
+          );
+        }),
+      };
+    }),
   },
 ) {}
 

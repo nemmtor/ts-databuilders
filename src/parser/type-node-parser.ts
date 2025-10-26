@@ -194,6 +194,7 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                       generateMetadata({ typeNode, optional: false }),
                     ),
                   ),
+                  { concurrency: 'unbounded' },
                 );
 
                 return { kind: 'TUPLE' as const, optional, members };
@@ -335,6 +336,7 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                         generateMetadata({ typeNode, optional: false }),
                       ),
                     ),
+                  { concurrency: 'unbounded' },
                 );
 
                 return { kind: 'UNION' as const, optional, members };

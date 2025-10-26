@@ -152,37 +152,36 @@ export class UserBuilder extends DataBuilder<User> {
 ```
 ## Configuration
 All configuration is optional with sensible defaults.
-### Via CLI flags:
+
+### Initialize Config File (optional)
+Generate a default `ts-databuilders.json` configuration file:
+```bash
+pnpm ts-databuilders init
+```
+You can also generate configuration file by providing values step by step in an interactive wizard:
+```bash
+pnpm ts-databuilders init --wizard
+```
+
+### Configure via CLI flags (optional:
 ```bash
 pnpm ts-databuilders --output-dir="src/__generated__" --jsdoc-tag=MyBuilder
 ```
-### Via config file (`ts-databuilders.json`):
-```json
-{
-  "$schema": "https://raw.githubusercontent.com/nemmtor/ts-databuilders/refs/heads/main/schema.json",
-  "include": "src/**/*.ts",
-  "outputDir": "src/__generated__/builders",
-  "jsdocTag": "DataBuilder",
-  "fileSuffix": ".builder",
-  "builderSuffix": "Builder",
-  "defaults": {
-    "string": "",
-    "number": 0,
-    "boolean": false
-  }
-}
+You can also provide configuration by going through interactive wizard:
+```bash
+pnpm ts-databuilders --wizard
 ```
 
 ### Options Reference
 
-| Name          | Flag              | Description                                      | Default                     |
-|---------------|-------------------|--------------------------------------------------|-----------------------------|
-| jsdocTag      | `--jsdoc-tag`     | JSDoc tag to mark types for generation           | `DataBuilder`               |
-| outputDir     | `--output-dir -o` | Output directory for generated builders          | `generated/builders`        |
-| include       | `--include -i`    | Glob pattern for source files                    | `src/**/*.ts{,x}`           |
-| fileSuffix    | `--file-suffix`   | File suffix for builder files                    | `.builder`                  |
-| builderSuffix | `--builder-suffix`| Class name suffix                                | `Builder`                   |
-| defaults      | `--defaults`      | Default values for primitives                    | See example above           |
+| Name          | Flag                                                  | Description                             | Default              |
+|---------------|-------------------------------------------------------|-----------------------------------------|----------------------|
+| jsdocTag      | `--jsdoc-tag`                                         | JSDoc tag to mark types for generation  | `DataBuilder`        |
+| outputDir     | `--output-dir -o`                                     | Output directory for generated builders | `generated/builders` |
+| include       | `--include -i`                                        | Glob pattern for source files           | `src/**/*.ts{,x}`    |
+| fileSuffix    | `--file-suffix`                                       | File suffix for builder files           | `.builder`           |
+| builderSuffix | `--builder-suffix`                                    | Class name suffix                       | `Builder`            |
+| defaults      | `--default-string --default-number --default-boolean` | Default values for primitives           | See example above    |
 
 **Priority:** CLI flags > Config file > Built-in defaults
 

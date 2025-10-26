@@ -15,6 +15,9 @@ export class FileContentChecker extends Effect.Service<FileContentChecker>()(
           content: string;
         }) {
           const { content, filePath } = opts;
+          yield* Effect.logDebug(
+            `[FileContentChecker](${filePath}): Checking file content`,
+          );
           const fileContentStream = Stream.orDie(
             fs.stream(filePath, {
               chunkSize: 16 * 1024,
@@ -30,6 +33,13 @@ export class FileContentChecker extends Effect.Service<FileContentChecker>()(
               ];
             }),
             Stream.find(Boolean),
+            Stream.tap((v) =>
+              v
+                ? Effect.logDebug(
+                    `[FileContentChecker](${filePath}): found expected content`,
+                  )
+                : Effect.void,
+            ),
             Stream.runCollect,
           );
           return result;

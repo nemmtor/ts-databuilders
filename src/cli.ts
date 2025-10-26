@@ -3,13 +3,19 @@ import * as Layer from 'effect/Layer';
 import * as Builders from './builders';
 import { options } from './cli-options';
 import * as Configuration from './configuration';
+import { createJsonConfig } from './create-json-config';
 import * as Finder from './finder';
 import * as Parser from './parser';
 import { program } from './program';
 
+const initCommand = Command.make('init', options).pipe(
+  Command.withHandler(createJsonConfig),
+);
+
 const databuilderCommand = Command.make('ts-databuilders', options);
 export const cli = databuilderCommand.pipe(
   Command.withHandler(() => program),
+  Command.withSubcommands([initCommand]),
   Command.provide((providedOptions) =>
     Layer.mergeAll(
       Finder.Finder.Default,
