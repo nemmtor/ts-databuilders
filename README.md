@@ -27,7 +27,7 @@ You can also generate configuration file by providing values step by step in an 
 pnpm ts-databuilders init --wizard
 ```
 
-### Configure via CLI flags (optional:
+### Configure via CLI flags (optional):
 ```bash
 pnpm ts-databuilders --output-dir="src/__generated__" --jsdoc-tag=MyBuilder
 ```
@@ -133,7 +133,7 @@ Where in reality the only thing specific to this single test is the fact that so
 Imagine even more complex scenario:
 ```tsx
 it('should show validation error when email is invalid', async () => {
-  render(<ProfileForm defaultValues={
+  render(<ProfileForm defaultValues={{
       firstName: '',
       lastName: '',
       age: 0,
@@ -152,7 +152,7 @@ it('should show validation error when email is invalid', async () => {
       skills: [],
       bio: '',
       email: 'invalid-email'
-    }
+    }}
   />)
 
   await submitForm();
@@ -165,9 +165,13 @@ Again - in reality you should only be worried about email, not about whole form 
 Here's how above tests could be written with databuilders:
 ```ts
 it('should emit a ContentUpdatedEvent', () => {
-  const aggregate = DocumentAggregate.create(new CreateDocumentAggregatedPayloadBuilder().build());
+  const aggregate = DocumentAggregate.create(
+    new CreateDocumentAggregatedPayloadBuilder().build()
+  );
 
-  aggregate.updateContent(new UpdateDocumentContentPayloadBuilder().withContent('new-content').build());
+  aggregate.updateContent(
+    new UpdateDocumentContentPayloadBuilder().withContent('new-content').build()
+  );
 
   expect(...);
 })
@@ -175,7 +179,9 @@ it('should emit a ContentUpdatedEvent', () => {
 
 ```tsx
 it('should show validation error when email is invalid', async () => {
-  render(<ProfileForm defaultValues={new ProfileFormInputBuilder.withEmail('invalid-email').build()} />)
+  render(<ProfileForm defaultValues={
+    new ProfileFormInputBuilder.withEmail('invalid-email').build()} />
+  )
 
   await submitForm();
 
@@ -333,7 +339,7 @@ export type User = { name: string };
 ```
 
 ### Type Aliases Only
-Currently, only **type aliases** are supported as root builder types. Interfaces, classes, and enums are not supported:
+Currently, only **type aliases** are supported as root builder types. Interfaces, classes etc. are not supported:
 ```ts
 // ❌ Not supported
 /** @DataBuilder */
@@ -354,7 +360,7 @@ export type User = {
 };
 ```
 
-### Unsupported Type Features
+### Unsupported TypeScript Features
 
 Some TypeScript features are not yet supported and will cause generation errors:
 
