@@ -1,4 +1,6 @@
-import { isDefined } from './is-defined';
+export const isDefined = <T>(value: T): value is Exclude<T, undefined> => {
+  return value !== undefined;
+};
 
 export const removeUndefinedFields = <T extends Record<string, unknown>>(
   obj: T,

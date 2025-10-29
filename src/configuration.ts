@@ -4,9 +4,10 @@ import * as Context from 'effect/Context';
 import * as Effect from 'effect/Effect';
 import * as Option from 'effect/Option';
 import * as Schema from 'effect/Schema';
-import { DESCRIPTIONS } from './descriptions';
-import * as Process from './process';
-import { removeUndefinedFields } from './utils/remove-undefined-fields';
+
+import * as CONSTANTS from './constants';
+import * as Process from './lib/process';
+import * as utils from './lib/utils';
 
 export const CONFIG_FILE_NAME = 'ts-databuilders.json';
 
@@ -40,33 +41,35 @@ type ConfigurationShape = typeof ConfigurationSchema.Type;
 export const ConfigurationFileSchema = Schema.Struct({
   $schema: Schema.optional(Schema.String),
   jsdocTag: Schema.String.pipe(
-    Schema.annotations({ description: DESCRIPTIONS.jsdocTag }),
+    Schema.annotations({ description: CONSTANTS.DESCRIPTIONS.jsdocTag }),
   ),
   outputDir: Schema.String.pipe(
-    Schema.annotations({ description: DESCRIPTIONS.outputDir }),
+    Schema.annotations({ description: CONSTANTS.DESCRIPTIONS.outputDir }),
   ),
   include: Schema.String.pipe(
-    Schema.annotations({ description: DESCRIPTIONS.include }),
+    Schema.annotations({ description: CONSTANTS.DESCRIPTIONS.include }),
   ),
   fileSuffix: Schema.String.pipe(
-    Schema.annotations({ description: DESCRIPTIONS.fileSuffix }),
+    Schema.annotations({ description: CONSTANTS.DESCRIPTIONS.fileSuffix }),
   ),
   builderSuffix: Schema.String.pipe(
-    Schema.annotations({ description: DESCRIPTIONS.builderSuffix }),
+    Schema.annotations({ description: CONSTANTS.DESCRIPTIONS.builderSuffix }),
   ),
   defaults: Schema.Struct({
     string: Schema.String.pipe(
-      Schema.annotations({ description: DESCRIPTIONS.defaultString }),
+      Schema.annotations({ description: CONSTANTS.DESCRIPTIONS.defaultString }),
     ),
     number: Schema.Number.pipe(
-      Schema.annotations({ description: DESCRIPTIONS.defaultNumber }),
+      Schema.annotations({ description: CONSTANTS.DESCRIPTIONS.defaultNumber }),
     ),
     boolean: Schema.Boolean.pipe(
-      Schema.annotations({ description: DESCRIPTIONS.defaultBoolean }),
+      Schema.annotations({
+        description: CONSTANTS.DESCRIPTIONS.defaultBoolean,
+      }),
     ),
   }).pipe(
     Schema.partial,
-    Schema.annotations({ description: DESCRIPTIONS.defaults }),
+    Schema.annotations({ description: CONSTANTS.DESCRIPTIONS.defaults }),
   ),
 }).pipe(Schema.partial);
 
@@ -120,10 +123,10 @@ const resolveConfig = (opts: {
       opts.fromConfigFile,
       (fileContent) => Option.fromNullable(fileContent.defaults),
     ).pipe(
-      Option.map((v) => removeUndefinedFields(v)),
+      Option.map((v) => utils.removeUndefinedFields(v)),
       Option.getOrElse(() => ({})),
     );
-    const defaultsFromCLI = removeUndefinedFields({
+    const defaultsFromCLI = utils.removeUndefinedFields({
       string: opts.fromCLI.defaultString.pipe(Option.getOrUndefined),
       number: opts.fromCLI.defaultNumber.pipe(Option.getOrUndefined),
       boolean: opts.fromCLI.defaultBoolean.pipe(Option.getOrUndefined),

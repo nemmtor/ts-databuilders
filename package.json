@@ -27,8 +27,9 @@
     "dist"
   ],
   "scripts": {
-    "build:node": "bun build src/main.ts --target node --outfile dist/main.js --production --packages external",
-    "start": "bun src/main.ts",
+    "build": "tsup",
+    "test": "vitest run --coverage",
+    "start": "tsx src/main.ts",
     "format": "biome format",
     "format:fix": "biome format --write",
     "lint": "biome lint",
@@ -38,15 +39,20 @@
     "check-types": "tsc -b tsconfig.json",
     "check-knip": "knip",
     "check-dep": "depcruise --output-type err-long src",
-    "gen:schema": "bun scripts/generate-schema.ts"
+    "gen:schema": "tsx scripts/generate-schema.ts"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.2.7",
-    "@effect/language-service": "^0.47.3",
+    "@biomejs/biome": "^2.3.2",
+    "@effect/language-service": "^0.53.1",
+    "@effect/vitest": "^0.26.0",
     "@total-typescript/ts-reset": "^0.6.1",
-    "@types/bun": "^1.3.0",
-    "dependency-cruiser": "^17.1.0",
-    "knip": "^5.66.2"
+    "@types/node": "^22.18.13",
+    "@vitest/coverage-v8": "4.0.6",
+    "dependency-cruiser": "^17.2.0",
+    "knip": "^5.66.4",
+    "tsup": "^8.5.0",
+    "tsx": "^4.20.6",
+    "vitest": "^4.0.6"
   },
   "peerDependencies": {
     "typescript": "^5.9.3"
@@ -58,5 +64,9 @@
     "effect": "^3.18.4",
     "glob": "^11.0.3",
     "ts-morph": "^27.0.2"
+  },
+  "packageManager": "pnpm@10.20.0+sha512.cf9998222162dd85864d0a8102e7892e7ba4ceadebbf5a31f9c2fce48dfce317a9c53b9f6464d1ef9042cba2e02ae02a9f7c143a2b438cd93c91840f0192b9dd",
+  "engines": {
+    "node": ">=20.0.0"
   }
 }

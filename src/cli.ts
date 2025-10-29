@@ -1,12 +1,78 @@
 import * as Command from '@effect/cli/Command';
+import * as Options from '@effect/cli/Options';
 import * as Layer from 'effect/Layer';
-import * as Builders from './builders';
-import { options } from './cli-options';
+
+import * as BuildersGenerator from './builders-generator';
 import * as Configuration from './configuration';
+import * as CONSTANTS from './constants';
 import { createJsonConfig } from './create-json-config';
 import * as Finder from './finder';
 import * as Parser from './parser';
 import { program } from './program';
+
+// TODO: options for: type union priorities
+const jsdocTag = Options.text('jsdoc-tag').pipe(
+  Options.withDescription(CONSTANTS.DESCRIPTIONS.jsdocTag),
+  Options.withSchema(Configuration.CliConfigurationSchema.fields.jsdocTag),
+  Options.optional,
+);
+
+const outputDir = Options.text('output-dir').pipe(
+  Options.withAlias('o'),
+  Options.withDescription(CONSTANTS.DESCRIPTIONS.outputDir),
+  Options.withSchema(Configuration.CliConfigurationSchema.fields.outputDir),
+  Options.optional,
+);
+
+const include = Options.text('include').pipe(
+  Options.withAlias('i'),
+  Options.withDescription(CONSTANTS.DESCRIPTIONS.include),
+  Options.withSchema(Configuration.CliConfigurationSchema.fields.include),
+  Options.optional,
+);
+
+const fileSuffix = Options.text('file-suffix').pipe(
+  Options.withDescription(CONSTANTS.DESCRIPTIONS.fileSuffix),
+  Options.withSchema(Configuration.CliConfigurationSchema.fields.fileSuffix),
+  Options.optional,
+);
+
+const builderSuffix = Options.text('builder-suffix').pipe(
+  Options.withDescription(CONSTANTS.DESCRIPTIONS.builderSuffix),
+  Options.withSchema(Configuration.CliConfigurationSchema.fields.builderSuffix),
+  Options.optional,
+);
+
+const defaultString = Options.text('default-string').pipe(
+  Options.withDescription(CONSTANTS.DESCRIPTIONS.defaultString),
+  Options.withSchema(Configuration.CliConfigurationSchema.fields.defaultString),
+  Options.optional,
+);
+
+const defaultNumber = Options.text('default-number').pipe(
+  Options.withDescription(CONSTANTS.DESCRIPTIONS.defaultNumber),
+  Options.withSchema(Configuration.CliConfigurationSchema.fields.defaultNumber),
+  Options.optional,
+);
+
+const defaultBoolean = Options.text('default-boolean').pipe(
+  Options.withDescription(CONSTANTS.DESCRIPTIONS.defaultBoolean),
+  Options.withSchema(
+    Configuration.CliConfigurationSchema.fields.defaultBoolean,
+  ),
+  Options.optional,
+);
+
+export const options = {
+  jsdocTag,
+  outputDir,
+  include,
+  fileSuffix,
+  builderSuffix,
+  defaultString,
+  defaultNumber,
+  defaultBoolean,
+};
 
 const initCommand = Command.make('init', options).pipe(
   Command.withHandler(createJsonConfig),
@@ -20,7 +86,7 @@ export const cli = databuilderCommand.pipe(
     Layer.mergeAll(
       Finder.Finder.Default,
       Parser.Parser.Default,
-      Builders.Builders.Default,
+      BuildersGenerator.BuildersGenerator.Default,
     ).pipe(
       Layer.provide(
         Layer.effect(

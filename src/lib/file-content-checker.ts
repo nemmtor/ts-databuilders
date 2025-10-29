@@ -1,4 +1,5 @@
 import * as FileSystem from '@effect/platform/FileSystem';
+import * as Chunk from 'effect/Chunk';
 import * as Effect from 'effect/Effect';
 import * as Stream from 'effect/Stream';
 
@@ -32,15 +33,14 @@ export class FileContentChecker extends Effect.Service<FileContentChecker>()(
                 combined.includes(content),
               ];
             }),
-            Stream.find(Boolean),
-            Stream.tap((v) =>
-              v
-                ? Effect.logDebug(
-                    `[FileContentChecker](${filePath}): found expected content`,
-                  )
-                : Effect.void,
+            Stream.find((v): v is true => Boolean(v)),
+            Stream.tap(() =>
+              Effect.logDebug(
+                `[FileContentChecker](${filePath}): found expected content`,
+              ),
             ),
             Stream.runCollect,
+            Effect.map((v) => v.pipe(Chunk.get(0))),
           );
           return result;
         }),

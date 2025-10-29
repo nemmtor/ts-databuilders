@@ -1,19 +1,20 @@
 import * as Chunk from 'effect/Chunk';
 import * as Effect from 'effect/Effect';
 import * as Function from 'effect/Function';
-import { Builders } from './builders';
-import { Finder } from './finder';
-import { Parser } from './parser';
+
+import * as BuildersGenerator from './builders-generator';
+import * as Finder from './finder';
+import * as Parser from './parser';
 
 export const program = Effect.gen(function* () {
-  const finder = yield* Finder;
-  const parser = yield* Parser;
-  const builders = yield* Builders;
+  const finder = yield* Finder.Finder;
+  const parser = yield* Parser.Parser;
+  const builders = yield* BuildersGenerator.BuildersGenerator;
 
   yield* Effect.logInfo(
     '[TSDatabuilders]: Generating builders for your project.',
   );
-  const filePaths = yield* finder.find();
+  const filePaths = yield* finder.find;
   yield* Effect.logInfo(
     `[TSDatabuilders]: Found builders in ${filePaths.length} file(s).`,
   );

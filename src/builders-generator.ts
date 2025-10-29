@@ -1,26 +1,31 @@
+import { Project } from 'ts-morph';
+
 import * as FileSystem from '@effect/platform/FileSystem';
 import * as Path from '@effect/platform/Path';
 import * as Effect from 'effect/Effect';
 import * as Match from 'effect/Match';
-import { Project } from 'ts-morph';
-import { Configuration } from '../configuration';
-import type { DataBuilderMetadata, TypeNodeMetadata } from '../parser';
-import * as Process from '../process';
-import { toKebabCase } from '../utils';
-import { createBuilderMethod } from './create-builder-method';
+import * as Schema from 'effect/Schema';
 
-export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
+import * as Configuration from './configuration';
+import * as CaseSchemas from './lib/case-schemas';
+import * as IdGenerator from './lib/id-generator';
+import * as Process from './lib/process';
+import type * as Parser from './parser';
+import type * as TypeNodeParser from './parser';
+
+class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
   '@TSDataBuilders/BuilderGenerator',
   {
     effect: Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem;
       const path = yield* Path.Path;
       const process = yield* Process.Process;
-      const configuration = yield* Configuration;
+      const configuration = yield* Configuration.Configuration;
+      const idGenerator = yield* IdGenerator.IdGenerator;
       const { fileSuffix, builderSuffix, defaults } = configuration;
 
       const getDefaultValueLiteral = (
-        typeNodeMetadata: TypeNodeMetadata,
+        typeNodeMetadata: TypeNodeParser.TypeNodeMetadata,
       ): string | number | boolean =>
         Match.value(typeNodeMetadata).pipe(
           Match.when({ kind: 'STRING' }, () => `"${defaults.string}"`),
@@ -92,11 +97,11 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
             `[Builders]: Creating base builder at ${baseBuilderPath}`,
           );
           yield* Effect.orDie(
-            fs.writeFileString(baseBuilderPath, BASE_BUILDER_CONTENT),
+            fs.writeFileString(baseBuilderPath, `${BASE_BUILDER_CONTENT}\n`),
           );
         }),
         generateBuilder: Effect.fnUntraced(function* (
-          builderMetadata: DataBuilderMetadata,
+          builderMetadata: Parser.DataBuilderMetadata,
         ) {
           const project = new Project();
           const typeName = builderMetadata.name;
@@ -111,15 +116,19 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
 
           const builderFilePath = path.resolve(
             outputDir,
-            `${toKebabCase(typeName)}${fileSuffix}.ts`,
+            `${yield* CaseSchemas.KebabCaseFromString.pipe(Schema.decode)(typeName)}${fileSuffix}.ts`,
           );
           yield* Effect.logDebug(
-            `[Builders]: Creating builder file at ${builderFilePath}`,
+            `[Builders]: Creating builder content for ${typeName}`,
           );
 
-          const file = project.createSourceFile(builderFilePath, '', {
-            overwrite: true,
-          });
+          const file = project.createSourceFile(
+            `__temp_${yield* idGenerator.generateUuid}.ts`,
+            '',
+            {
+              overwrite: true,
+            },
+          );
 
           const originalFilePath = path.resolve(builderMetadata.path);
           const originalFileImportPath = path
@@ -148,12 +157,21 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
               extractNestedBuilderTypeNames(builderMetadata.shape.metadata),
             ),
           ];
-          nestedBuildersTypeNames.forEach((nestedBuilderTypeName) => {
-            file.addImportDeclaration({
-              namedImports: [`${nestedBuilderTypeName}${builderSuffix}`],
-              moduleSpecifier: `./${toKebabCase(nestedBuilderTypeName)}${fileSuffix}`,
-            });
-          });
+          yield* Effect.forEach(
+            nestedBuildersTypeNames,
+            (nestedBuilderTypeName) =>
+              CaseSchemas.KebabCaseFromString.pipe(Schema.decode)(
+                nestedBuilderTypeName,
+              ).pipe(
+                Effect.andThen((camelCasedName) =>
+                  file.addImportDeclaration({
+                    namedImports: [`${nestedBuilderTypeName}${builderSuffix}`],
+                    moduleSpecifier: `./${camelCasedName}${fileSuffix}`,
+                  }),
+                ),
+              ),
+            { concurrency: 'unbounded' },
+          );
           const defaultEntries = Object.entries(builderMetadata.shape.metadata)
             .filter(([_, { optional }]) => !optional)
             .map(
@@ -161,15 +179,17 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
                 `${key}: ${typePropertyShape.kind === 'TYPE_CAST' ? `${getDefaultValueLiteral(typePropertyShape)} as ${typeName}['${key}']` : getDefaultValueLiteral(typePropertyShape)}`,
             );
 
-          const builderMethods = Object.entries(
-            builderMetadata.shape.metadata,
-          ).map(([fieldName, { optional, kind }]) =>
-            createBuilderMethod({
-              fieldName,
-              optional,
-              typeName,
-              isNestedBuilder: kind === 'BUILDER',
-            }),
+          const builderMethods = yield* Effect.all(
+            Object.entries(builderMetadata.shape.metadata).map(
+              ([fieldName, { optional, kind }]) =>
+                createBuilderMethod({
+                  fieldName,
+                  optional,
+                  typeName,
+                  isNestedBuilder: kind === 'BUILDER',
+                }),
+            ),
+            { concurrency: 'unbounded' },
           );
 
           const defaultObjectLiteral = `{\n  ${defaultEntries.join(',\n  ')}\n}`;
@@ -189,14 +209,15 @@ export class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
           yield* Effect.logDebug(
             `[Builders]: Saving builder content at ${builderFilePath}`,
           );
-          file.saveSync();
+          yield* fs.writeFileString(builderFilePath, `${file.getText()}\n`);
         }),
       };
     }),
+    dependencies: [IdGenerator.IdGenerator.Default],
   },
 ) {}
 
-const UNION_TYPE_PRIORITY: TypeNodeMetadata['kind'][] = [
+const UNION_TYPE_PRIORITY: TypeNodeParser.TypeNodeMetadata['kind'][] = [
   'UNDEFINED',
   'BOOLEAN',
   'NUMBER',
@@ -229,11 +250,11 @@ const BASE_BUILDER_CONTENT = `export abstract class DataBuilder<T> {
 
 // TODO: refactor it
 function extractNestedBuilderTypeNames(
-  rootBuilderShapeMetadata: Record<string, TypeNodeMetadata>,
+  rootBuilderShapeMetadata: Record<string, TypeNodeParser.TypeNodeMetadata>,
 ): string[] {
   const builderNames: string[] = [];
 
-  function traverse(node: TypeNodeMetadata) {
+  function traverse(node: TypeNodeParser.TypeNodeMetadata) {
     switch (node.kind) {
       case 'BUILDER':
         builderNames.push(node.name);
@@ -255,3 +276,115 @@ function extractNestedBuilderTypeNames(
   Object.values(rootBuilderShapeMetadata).forEach(traverse);
   return builderNames;
 }
+
+const createBuilderMethod = (props: {
+  typeName: string;
+  fieldName: string;
+  optional: boolean;
+  isNestedBuilder: boolean;
+}) =>
+  Effect.gen(function* () {
+    const { fieldName, optional, typeName, isNestedBuilder } = props;
+
+    const normalizedFieldName = fieldName
+      .replaceAll("'", '')
+      .replaceAll('"', '');
+    const parameterName = yield* CaseSchemas.CamelCaseFromString.pipe(
+      Schema.decode,
+    )(normalizedFieldName);
+    const methodName = `with${yield* CaseSchemas.PascalCaseFromString.pipe(Schema.decode)(normalizedFieldName)}`;
+
+    const normalPathStatements = [
+      `return this.with({ ${fieldName}: ${parameterName} });`,
+    ];
+    const builderPathStatements = [
+      `return this.with({ ${fieldName}: ${parameterName}.build() });`,
+    ];
+
+    const returnStatements = isNestedBuilder
+      ? builderPathStatements
+      : normalPathStatements;
+
+    const skipPathStatements = [
+      `if (!${parameterName}) {`,
+      `  const { "${normalizedFieldName}": _unused, ...rest } = this.build();`,
+      `  return this.with(rest);`,
+      `}`,
+    ];
+    const statements = optional
+      ? [...skipPathStatements, ...returnStatements]
+      : returnStatements;
+
+    const parameterType = `${typeName}['${normalizedFieldName}']`;
+
+    return {
+      name: methodName,
+      isPublic: true,
+      parameters: [
+        {
+          name: parameterName,
+          type: isNestedBuilder
+            ? `DataBuilder<${parameterType}>`
+            : parameterType,
+        },
+      ],
+      statements: statements,
+    };
+  });
+
+export class BuildersGenerator extends Effect.Service<BuildersGenerator>()(
+  '@TSDataBuilders/BuildersGenerator',
+  {
+    effect: Effect.gen(function* () {
+      const fs = yield* FileSystem.FileSystem;
+      const builderGenerator = yield* BuilderGenerator;
+      const process = yield* Process.Process;
+      const path = yield* Path.Path;
+      const configuration = yield* Configuration.Configuration;
+
+      return {
+        create: Effect.fnUntraced(function* (
+          buildersMetadata: Parser.DataBuilderMetadata[],
+        ) {
+          const outputDir = path.join(
+            yield* process.cwd,
+            configuration.outputDir,
+          );
+          const exists = yield* Effect.orDie(fs.exists(outputDir));
+          if (exists) {
+            yield* Effect.logDebug(
+              `[Builders]: Removing already existing output directory at ${outputDir}`,
+            );
+            yield* Effect.orDie(fs.remove(outputDir, { recursive: true }));
+          }
+          yield* Effect.logDebug(
+            `[Builders]: Creating output directory at ${outputDir}`,
+          );
+          yield* Effect.orDie(fs.makeDirectory(outputDir, { recursive: true }));
+
+          yield* builderGenerator.generateBaseBuilder();
+
+          const builderNames = buildersMetadata.map((v) => v.name);
+          const duplicatedBuilderNames = builderNames.filter(
+            (name, index) => builderNames.indexOf(name) !== index,
+          );
+          const uniqueDuplicates = [...new Set(duplicatedBuilderNames)];
+
+          if (duplicatedBuilderNames.length > 0) {
+            return yield* Effect.dieMessage(
+              `Duplicated builders: ${uniqueDuplicates.join(', ')}`,
+            );
+          }
+
+          yield* Effect.all(
+            buildersMetadata.map((builderMetadata) =>
+              builderGenerator.generateBuilder(builderMetadata),
+            ),
+            { concurrency: 'unbounded' },
+          );
+        }),
+      };
+    }),
+    dependencies: [BuilderGenerator.Default],
+  },
+) {}

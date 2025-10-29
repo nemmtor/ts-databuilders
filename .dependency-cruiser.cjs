@@ -331,25 +331,6 @@ module.exports = {
      */
     skipAnalysisNotInRules: true,
 
-    /* List of built-in modules to use on top of the ones node declares.
-
-       See https://github.com/sverweij/dependency-cruiser/blob/main/doc/options-reference.md#builtinmodules-influencing-what-to-consider-built-in--core-modules
-       for details
-    */
-    builtInModules: {
-      add: [
-        'bun',
-        'bun:ffi',
-        'bun:jsc',
-        'bun:sqlite',
-        'bun:test',
-        'bun:wrap',
-        'detect-libc',
-        'undici',
-        'ws',
-      ],
-    },
-
     reporterOptions: {
       dot: {
         /* pattern of modules that can be consolidated in the detailed
@@ -394,4 +375,4 @@ module.exports = {
     },
   },
 };
-// generated: dependency-cruiser@17.0.2 on 2025-10-12T20:55:04.724Z
+// generated: dependency-cruiser@17.2.0 on 2025-10-29T22:14:51.182Z
