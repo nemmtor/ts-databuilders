@@ -33,7 +33,20 @@ jobs:
       - name: Setup project
         uses: ./.github/actions/setup
 
-
       - name: Run ${{ matrix.check }}
         run: pnpm ${{ matrix.check }}
+  gitleaks:
+    name: Leaked secrets check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+            # https://github.com/gitleaks/gitleaks/issues/1306
+            fetch-depth: 0
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
