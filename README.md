@@ -191,6 +191,8 @@ it('should show validation error when email is invalid', async () => {
 
 This not only makes the test code less verbose but also highlights what is really being tested.
 
+**Why not use AI for that?** While AI can generate test data, ts-databuilders is fast, free and deterministic.
+
 [Read more about data builders.](http://www.natpryce.com/articles/000714.html)
 
 ## Nested Builders
