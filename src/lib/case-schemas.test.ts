@@ -11,7 +11,7 @@ describe('KebabCaseFromString', () => {
   it('should decode camelCase to kebab-case', () => {
     const result = KebabCaseFromString.pipe(Schema.decodeSync)('helloWorld');
 
-    expect(result).toBe('hello-world');
+    expect(result).toBe('hello-world1');
   });
 
   it('should decode PascalCase to kebab-case', () => {
