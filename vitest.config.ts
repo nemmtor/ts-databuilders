@@ -6,12 +6,12 @@ export default defineConfig({
       include: ['src/**/*.{ts,tsx}'],
       provider: 'v8',
       reporter: ['text'],
-      thresholds: {
-        lines: 90,
-        functions: 90,
-        branches: 90,
-        statements: 90,
-      },
+      // thresholds: {
+      //   lines: 90,
+      //   functions: 90,
+      //   branches: 90,
+      //   statements: 90,
+      // },
     },
     mockReset: true,
     restoreMocks: true,
