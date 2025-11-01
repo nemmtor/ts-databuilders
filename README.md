@@ -399,6 +399,8 @@ Some TypeScript features are not yet supported and will cause generation errors:
 
 Your feedback helps improve the library for everyone! 🙏
 
+## Similar Projects
+- [effect-builder](https://github.com/slashlifeai/effect-builder) - a runtime library for building objects with Effect Schema validation.
 
 ## Contributing
 
