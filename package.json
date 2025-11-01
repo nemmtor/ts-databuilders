@@ -51,6 +51,7 @@
     "@vitest/coverage-v8": "4.0.6",
     "dependency-cruiser": "^17.2.0",
     "knip": "^5.66.4",
+    "lefthook": "^2.0.2",
     "tsup": "^8.5.0",
     "tsx": "^4.20.6",
     "vitest": "^4.0.6"
