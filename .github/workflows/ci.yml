@@ -1,0 +1,39 @@
+name: Continous Integration
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+jobs:
+  test:
+    name: Unit and integration tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup project
+        uses: ./.github/actions/setup
+
+      - name: Run tests
+        run: pnpm test:coverage
+
+  static-analysis:
+    name: Static analysis
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        check: [format, lint, check-actions, check-types, check-knip, check-dep]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup project
+        uses: ./.github/actions/setup
+
+
+      - name: Run ${{ matrix.check }}
+        run: pnpm ${{ matrix.check }}
+
