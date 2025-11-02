@@ -49,6 +49,9 @@ pnpm ts-databuilders --wizard
 
 **Priority:** CLI flags > Config file > Built-in defaults
 
+#### Debugging
+In order to turn on debug logs pass a flag: `--log-level debug`.
+
 ## Quick Start
 **1. Annotate your types with JSDoc:**
 ```ts
@@ -393,9 +396,12 @@ Some TypeScript features are not yet supported and will cause generation errors:
 - Test thoroughly before using in production
 
 **Found an issue?** Please [report it on GitHub](https://github.com/nemmtor/ts-databuilders/issues) with:
+- A minimal reproducible example (if possible)
 - The type definition causing the issue
 - The error message received
 - Your `ts-databuilders.json` config and any provided CLI flags (if applicable)
+
+You can also turn on debug logs by passing `--log-level debug` flag.
 
 Your feedback helps improve the library for everyone! 🙏
 

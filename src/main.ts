@@ -9,7 +9,7 @@ import { cli } from './cli';
 import * as Process from './lib/process';
 
 const MainLive = Layer.mergeAll(
-  Logger.minimumLogLevel(LogLevel.Debug),
+  Logger.minimumLogLevel(LogLevel.Info),
   Process.Process.Default,
   NodeContext.layer,
 );
