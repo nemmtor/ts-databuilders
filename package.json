@@ -29,6 +29,7 @@
   "scripts": {
     "build": "tsup",
     "test": "vitest run",
+    "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "start": "tsx src/main.ts",
     "format": "biome format",

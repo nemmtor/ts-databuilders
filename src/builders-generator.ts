@@ -32,6 +32,7 @@ class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
           Match.when({ kind: 'NUMBER' }, () => defaults.number),
           Match.when({ kind: 'BOOLEAN' }, () => defaults.boolean),
           Match.when({ kind: 'UNDEFINED' }, () => 'undefined'),
+          Match.when({ kind: 'NULL' }, () => 'null'),
           Match.when({ kind: 'DATE' }, () => 'new Date()'),
           Match.when({ kind: 'ARRAY' }, () => '[]'),
           Match.when({ kind: 'LITERAL' }, (v) => v.literalValue),

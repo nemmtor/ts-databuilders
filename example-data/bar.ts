@@ -40,7 +40,7 @@ export type Bar = {
     | number
     | true
   )[];
-  tuple: [string, number, 'xd', 1];
+  tuple: [string, number];
   'foo-bar-optional'?: 'foo-bar';
   obj: {
     str: string;
