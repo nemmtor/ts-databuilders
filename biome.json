@@ -17,8 +17,8 @@
     "enabled": true,
     "rules": {
       "recommended": true,
-      "suspicious": {
-        "noShadowRestrictedNames": "off"
+      "correctness": {
+        "noUnusedImports": "error"
       }
     }
   },

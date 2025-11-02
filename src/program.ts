@@ -1,6 +1,6 @@
 import * as Chunk from 'effect/Chunk';
 import * as Effect from 'effect/Effect';
-import * as Function from 'effect/Function';
+import * as EffectFunction from 'effect/Function';
 
 import * as BuildersGenerator from './builders-generator';
 import * as Finder from './finder';
@@ -26,7 +26,7 @@ export const program = Effect.gen(function* () {
       parser.generateBuildersMetadata(filePath),
     ),
     { concurrency: 'unbounded' },
-  ).pipe(Effect.map((v) => v.flatMap(Function.identity)));
+  ).pipe(Effect.map((v) => v.flatMap(EffectFunction.identity)));
 
   if (metadata.length === 0) {
     return;

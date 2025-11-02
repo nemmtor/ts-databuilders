@@ -1,7 +1,6 @@
-import { Chunk, Exit, Stream } from 'effect';
+import { Chunk, Stream } from 'effect';
 
 import { beforeEach, describe, expect, it, vi } from '@effect/vitest';
-import * as Cause from 'effect/Cause';
 import * as Effect from 'effect/Effect';
 import * as Layer from 'effect/Layer';
 import * as Option from 'effect/Option';
