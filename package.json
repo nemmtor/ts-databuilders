@@ -62,7 +62,7 @@
   "dependencies": {
     "@effect/cli": "^0.72.0",
     "@effect/platform": "^0.93.0",
-    "@effect/platform-node": "^0.98.4",
+    "@effect/platform-node": "^0.99.0",
     "effect": "^3.18.4",
     "glob": "^11.0.3",
     "ts-morph": "^27.0.2"
