@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@effect/cli':
-        specifier: ^0.71.0
-        version: 0.71.0(@effect/platform@0.92.1(effect@3.18.5))(@effect/printer-ansi@0.46.0(@effect/typeclass@0.37.0(effect@3.18.5))(effect@3.18.5))(@effect/printer@0.46.0(@effect/typeclass@0.37.0(effect@3.18.5))(effect@3.18.5))(effect@3.18.5)
+        specifier: ^0.72.0
+        version: 0.72.0(@effect/platform@0.92.1(effect@3.18.5))(@effect/printer-ansi@0.46.0(@effect/typeclass@0.37.0(effect@3.18.5))(effect@3.18.5))(@effect/printer@0.46.0(@effect/typeclass@0.37.0(effect@3.18.5))(effect@3.18.5))(effect@3.18.5)
       '@effect/platform':
         specifier: ^0.92.1
         version: 0.92.1(effect@3.18.5)
@@ -143,13 +143,13 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@effect/cli@0.71.0':
-    resolution: {integrity: sha512-ZmJpUVyhMpIUsiurf4UmEWTURPhGHtZrLRXkMOqggkhIeVR1kSxn8EM+ZMXLlT/23gxbHN4ymj7BmBjxP1oodA==}
+  '@effect/cli@0.72.0':
+    resolution: {integrity: sha512-shfnMTtfVaFJPn0JaCmgtVmp53dOExwoCYv2hMKidpLMrxJFm28z20VAdxYS+xIPqkYnXLbDXfVGXlQ7mQjZUA==}
     peerDependencies:
-      '@effect/platform': ^0.92.0
-      '@effect/printer': ^0.46.0
-      '@effect/printer-ansi': ^0.46.0
-      effect: ^3.18.0
+      '@effect/platform': ^0.93.0
+      '@effect/printer': ^0.47.0
+      '@effect/printer-ansi': ^0.47.0
+      effect: ^3.19.0
 
   '@effect/cluster@0.50.6':
     resolution: {integrity: sha512-JZTctj1SjMWZuG8RnkJCd1myAXmpDYEbLPURookJ6jXhpg8ZU29us49YtQa+MCUNmIr80qjeok/I1KVaQmJfrQ==}
@@ -1831,7 +1831,7 @@ snapshots:
   '@biomejs/cli-win32-x64@2.3.3':
     optional: true
 
-  '@effect/cli@0.71.0(@effect/platform@0.92.1(effect@3.18.5))(@effect/printer-ansi@0.46.0(@effect/typeclass@0.37.0(effect@3.18.5))(effect@3.18.5))(@effect/printer@0.46.0(@effect/typeclass@0.37.0(effect@3.18.5))(effect@3.18.5))(effect@3.18.5)':
+  '@effect/cli@0.72.0(@effect/platform@0.92.1(effect@3.18.5))(@effect/printer-ansi@0.46.0(@effect/typeclass@0.37.0(effect@3.18.5))(effect@3.18.5))(@effect/printer@0.46.0(@effect/typeclass@0.37.0(effect@3.18.5))(effect@3.18.5))(effect@3.18.5)':
     dependencies:
       '@effect/platform': 0.92.1(effect@3.18.5)
       '@effect/printer': 0.46.0(@effect/typeclass@0.37.0(effect@3.18.5))(effect@3.18.5)
