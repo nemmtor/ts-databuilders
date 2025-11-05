@@ -10,7 +10,7 @@ import * as Option from 'effect/Option';
 import * as Configuration from './configuration';
 import * as IdGenerator from './lib/id-generator';
 
-class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
+export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
   '@TSDataBuilders/TypeNodeParser',
   {
     effect: Effect.gen(function* () {
@@ -27,7 +27,7 @@ class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
           const props = type.getProperties();
 
           if (!type.isObject() || props.length === 0) {
-            return yield* new CannotBuildTypeReferenceMetadata({
+            return yield* new CannotBuildTypeReferenceMetadataError({
               raw: type.getText(),
               kind: contextNode.getKind(),
             });
@@ -73,7 +73,12 @@ class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
         optional: boolean;
       }): Effect.Effect<
         TypeNodeMetadata,
-        UnsupportedSyntaxKindError | CannotBuildTypeReferenceMetadata
+        | UnsupportedSyntaxKindError
+        | CannotBuildTypeReferenceMetadataError
+        | MultipleSymbolDeclarationsError
+        | MissingSymbolError
+        | MissingSymbolDeclarationError
+        | UnsupportedTypeAliasDeclarationError
       > =>
         Effect.gen(function* () {
           const { typeNode, optional } = opts;
@@ -110,16 +115,25 @@ class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                 optional,
               }),
             ),
-            Match.when(Match.is(SyntaxKind.LiteralType), () =>
-              Effect.succeed({
+            Match.when(Match.is(SyntaxKind.LiteralType), () => {
+              const literalValue = typeNode
+                .asKindOrThrow(SyntaxKind.LiteralType)
+                .getLiteral()
+                .getText();
+
+              if (literalValue === 'null') {
+                return Effect.succeed({
+                  kind: 'NULL' as const,
+                  optional,
+                });
+              }
+
+              return Effect.succeed({
                 kind: 'LITERAL' as const,
-                literalValue: typeNode
-                  .asKindOrThrow(SyntaxKind.LiteralType)
-                  .getLiteral()
-                  .getText(),
+                literalValue,
                 optional,
-              }),
-            ),
+              });
+            }),
             Match.when(Match.is(SyntaxKind.TypeLiteral), () =>
               Effect.gen(function* () {
                 const node = typeNode.asKindOrThrow(SyntaxKind.TypeLiteral);
@@ -163,20 +177,25 @@ class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                 );
                 const type = importType.getType();
                 const symbol = type.getSymbol();
+                const raw = type.getText();
 
                 if (!symbol) {
-                  return yield* Effect.die(new MissingSymbolError());
+                  return yield* new MissingSymbolError({
+                    raw,
+                  });
                 }
 
                 const declarations = symbol.getDeclarations();
                 if (declarations && declarations.length > 1) {
-                  return yield* Effect.die(
-                    new MultipleSymbolDeclarationsError(),
-                  );
+                  return yield* new MultipleSymbolDeclarationsError({
+                    raw,
+                  });
                 }
                 const [declaration] = declarations;
                 if (!declaration) {
-                  return yield* Effect.die(new MissingSymbolDeclarationError());
+                  return yield* new MissingSymbolDeclarationError({
+                    raw,
+                  });
                 }
 
                 // Try to resolve as object type
@@ -272,12 +291,13 @@ class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                 }
 
                 // User-defined types
-                const sym = node.getType().getAliasSymbol();
-
+                const type = node.getType();
+                const raw = type.getText();
+                const sym = type.getAliasSymbol();
                 // No symbol - try to resolve as object (handles z.infer, etc.)
                 if (!sym) {
                   return yield* resolveObjectTypeToMetadata({
-                    type: node.getType(),
+                    type,
                     contextNode: node,
                     optional,
                   });
@@ -285,13 +305,13 @@ class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
 
                 const declarations = sym.getDeclarations();
                 if (declarations && declarations.length > 1) {
-                  return yield* Effect.die(
-                    new MultipleSymbolDeclarationsError(),
-                  );
+                  return yield* new MultipleSymbolDeclarationsError({
+                    raw,
+                  });
                 }
                 const [declaration] = declarations;
                 if (!declaration) {
-                  return yield* Effect.die(new MissingSymbolDeclarationError());
+                  return yield* new MissingSymbolDeclarationError({ raw });
                 }
 
                 const hasBuilder = sym
@@ -300,16 +320,14 @@ class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                   .includes(jsdocTag);
 
                 if (!Node.isTypeAliasDeclaration(declaration)) {
-                  return yield* Effect.die(
-                    new UnsupportedTypeAliasDeclaration(),
-                  );
+                  return yield* new UnsupportedTypeAliasDeclarationError();
                 }
 
                 const aliasTypeNode = declaration.getTypeNode();
                 if (!aliasTypeNode) {
                   return yield* new UnsupportedSyntaxKindError({
                     kind: kind,
-                    raw: typeNode.getText(),
+                    raw,
                   });
                 }
 
@@ -407,35 +425,17 @@ class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
   },
 ) {}
 
-class UnsupportedSyntaxKindError extends Data.TaggedError(
-  'UnsupportedSyntaxKindError',
-)<{
-  kind: SyntaxKind;
-  raw: string;
-}> {}
-
-class MultipleSymbolDeclarationsError extends Data.TaggedError(
-  'MultipleSymbolDeclarationsError',
-) {}
-
-class MissingSymbolDeclarationError extends Data.TaggedError(
-  'MissingSymbolDeclarationError',
-) {}
-
-class MissingSymbolError extends Data.TaggedError('MissingSymbolError') {}
-
-class UnsupportedTypeAliasDeclaration extends Data.TaggedError(
-  'UnsupportedTypeAliasDeclaration',
-) {}
-
-class CannotBuildTypeReferenceMetadata extends Data.TaggedError(
-  'CannotBuildTypeReferenceMetadata',
-)<{ raw: string; kind: SyntaxKind }> {}
-
 export type TypeNodeMetadata =
   | {
       optional: boolean;
-      kind: 'STRING' | 'NUMBER' | 'BOOLEAN' | 'DATE' | 'UNDEFINED' | 'ARRAY';
+      kind:
+        | 'STRING'
+        | 'NUMBER'
+        | 'BOOLEAN'
+        | 'DATE'
+        | 'UNDEFINED'
+        | 'NULL'
+        | 'ARRAY';
     }
   | {
       optional: boolean;
@@ -481,8 +481,8 @@ export class Parser extends Effect.Service<Parser>()('@TSDataBuilders/Parser', {
     const { jsdocTag } = yield* Configuration.Configuration;
 
     return {
-      generateBuildersMetadata: Effect.fnUntraced(
-        function* (path: string) {
+      generateBuildersMetadata: (path: string) =>
+        Effect.gen(function* () {
           yield* Effect.logDebug(
             `[Parser](${path}): Generating builder metadata`,
           );
@@ -512,7 +512,6 @@ export class Parser extends Effect.Service<Parser>()('@TSDataBuilders/Parser', {
                   if (!typeAlias.isExported()) {
                     return Either.left(
                       new UnexportedDatabuilderError({
-                        path,
                         typeName: name,
                       }),
                     );
@@ -522,10 +521,10 @@ export class Parser extends Effect.Service<Parser>()('@TSDataBuilders/Parser', {
                   const isValidNodeKind =
                     node?.isKind(SyntaxKind.TypeLiteral) ||
                     node?.isKind(SyntaxKind.TypeReference);
+
                   if (!isValidNodeKind) {
                     return Either.left(
                       new UnsupportedBuilderTypeError({
-                        path,
                         typeName: typeAlias.getName(),
                       }),
                     );
@@ -561,57 +560,75 @@ export class Parser extends Effect.Service<Parser>()('@TSDataBuilders/Parser', {
                     ),
                   ),
                   Effect.map((shape) => ({ name, shape, path })),
-                  Effect.catchTags({
-                    UnsupportedSyntaxKindError: (cause) =>
-                      Effect.fail(
-                        new RichUnsupportedSyntaxKindError({
-                          kind: cause.kind,
-                          raw: cause.raw,
-                          path,
-                          typeName: name,
-                        }),
-                      ),
-                    CannotBuildTypeReferenceMetadata: (cause) =>
-                      Effect.fail(
-                        new RichCannotBuildTypeReferenceMetadata({
-                          kind: cause.kind,
-                          raw: cause.raw,
-                          path,
-                          typeName: name,
-                        }),
-                      ),
-                  }),
                 ),
             ),
             { concurrency: 'unbounded' },
           );
 
           return result;
-        },
-        Effect.catchTags({
-          ParserError: (cause) => Effect.die(cause),
-          UnexportedDatabuilderError: (cause) =>
-            Effect.dieMessage(
-              `[Parser](${cause.path}): Unexported databuilder ${cause.typeName}`,
-            ),
-          RichUnsupportedSyntaxKindError: (cause) =>
-            Effect.dieMessage(
-              `[Parser](${cause.path}): Unsupported syntax kind of id: ${cause.kind} with raw type: ${cause.raw} found in type ${cause.typeName}`,
-            ),
-          RichCannotBuildTypeReferenceMetadata: (cause) =>
-            Effect.dieMessage(
-              `[Parser](${cause.path}): Cannot build type reference metadata with kind of id: ${cause.kind} with raw type: ${cause.raw} found in type ${cause.typeName}. Is it a root of databuilder?`,
-            ),
-          UnsupportedBuilderTypeError: (cause) =>
-            Effect.dieMessage(
-              `[Parser](${cause.path}): Unsupported builder type ${cause.typeName}`,
-            ),
-        }),
-      ),
+        }).pipe(
+          Effect.catchTags({
+            ParserError: (cause) => Effect.die(cause),
+            MissingSymbolDeclarationError: (cause) =>
+              Effect.dieMessage(
+                `[Parser](${path}): Missing symbol declaration for type: ${cause.raw}`,
+              ),
+            UnsupportedTypeAliasDeclarationError: () =>
+              Effect.dieMessage(
+                `[Parser](${path}): Unsupported type alias declaration`,
+              ),
+            MultipleSymbolDeclarationsError: (cause) =>
+              Effect.dieMessage(
+                `[Parser](${path}): Missing symbol declaration error for type: ${cause.raw}`,
+              ),
+            MissingSymbolError: (cause) =>
+              Effect.dieMessage(
+                `[Parser](${path}): Missing symbol error for type: ${cause.raw}`,
+              ),
+
+            UnexportedDatabuilderError: (cause) =>
+              Effect.dieMessage(
+                `[Parser](${path}): Unexported databuilder ${cause.typeName}`,
+              ),
+            UnsupportedSyntaxKindError: (cause) =>
+              Effect.dieMessage(
+                `[Parser](${path}): Unsupported syntax kind of id: ${cause.kind} for type: ${cause.raw}`,
+              ),
+            CannotBuildTypeReferenceMetadataError: (cause) =>
+              Effect.dieMessage(
+                `[Parser](${path}): Cannot build type reference metadata with kind of id: ${cause.kind} for type: ${cause.raw}. Is it a root of databuilder?`,
+              ),
+            UnsupportedBuilderTypeError: (cause) =>
+              Effect.dieMessage(
+                `[Parser](${path}): Unsupported builder type ${cause.typeName}`,
+              ),
+          }),
+        ),
     };
   }),
   dependencies: [TypeNodeParser.Default],
 }) {}
+
+export type DataBuilderMetadata = {
+  name: string;
+  shape: TypeNodeMetadata;
+  path: string;
+};
+
+class UnsupportedSyntaxKindError extends Data.TaggedError(
+  'UnsupportedSyntaxKindError',
+)<{
+  kind: SyntaxKind;
+  raw: string;
+}> {}
+
+class UnsupportedTypeAliasDeclarationError extends Data.TaggedError(
+  'UnsupportedTypeAliasDeclarationError',
+) {}
+
+class CannotBuildTypeReferenceMetadataError extends Data.TaggedError(
+  'CannotBuildTypeReferenceMetadataError',
+)<{ raw: string; kind: SyntaxKind }> {}
 
 class ParserError extends Data.TaggedError('ParserError')<{
   cause: unknown;
@@ -621,31 +638,26 @@ class UnexportedDatabuilderError extends Data.TaggedError(
   'UnexportedDatabuilderError',
 )<{
   typeName: string;
-  path: string;
 }> {}
 
 class UnsupportedBuilderTypeError extends Data.TaggedError(
   'UnsupportedBuilderTypeError',
 )<{
   typeName: string;
-  path: string;
 }> {}
 
-class RichUnsupportedSyntaxKindError extends Data.TaggedError(
-  'RichUnsupportedSyntaxKindError',
-)<{
-  typeName: string;
-  path: string;
-  kind: SyntaxKind;
+class MissingSymbolError extends Data.TaggedError('MissingSymbolError')<{
   raw: string;
 }> {}
 
-class RichCannotBuildTypeReferenceMetadata extends Data.TaggedError(
-  'RichCannotBuildTypeReferenceMetadata',
-)<{ typeName: string; path: string; kind: SyntaxKind; raw: string }> {}
+class MissingSymbolDeclarationError extends Data.TaggedError(
+  'MissingSymbolDeclarationError',
+)<{
+  raw: string;
+}> {}
 
-export type DataBuilderMetadata = {
-  name: string;
-  shape: TypeNodeMetadata;
-  path: string;
-};
+class MultipleSymbolDeclarationsError extends Data.TaggedError(
+  'MultipleSymbolDeclarationsError',
+)<{
+  raw: string;
+}> {}
