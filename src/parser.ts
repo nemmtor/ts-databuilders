@@ -1,4 +1,11 @@
-import { Node, Project, SyntaxKind, type Type, type TypeNode } from 'ts-morph';
+import {
+  Node,
+  Project,
+  type PropertySignature,
+  SyntaxKind,
+  type Type,
+  type TypeNode,
+} from 'ts-morph';
 
 import * as FileSystem from '@effect/platform/FileSystem';
 import * as Data from 'effect/Data';
@@ -21,9 +28,10 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
         type: Type;
         contextNode: TypeNode;
         optional: boolean;
+        inlineDefault: Option.Option<string>;
       }) =>
         Effect.gen(function* () {
-          const { type, contextNode, optional } = opts;
+          const { type, contextNode, optional, inlineDefault } = opts;
           const props = type.getProperties();
 
           if (!type.isObject() || props.length === 0) {
@@ -54,6 +62,8 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
               generateMetadata({
                 typeNode: tempTypeNode,
                 optional: isOptional,
+                // TODO: double check if it should resolve inlineDefault
+                inlineDefault: Option.none<string>(),
               }),
             );
 
@@ -64,6 +74,7 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
           return {
             kind: 'TYPE_LITERAL' as const,
             metadata,
+            inlineDefault,
             optional,
           };
         });
@@ -71,6 +82,7 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
       const generateMetadata = (opts: {
         typeNode: TypeNode;
         optional: boolean;
+        inlineDefault: Option.Option<string>;
       }): Effect.Effect<
         TypeNodeMetadata,
         | UnsupportedSyntaxKindError
@@ -81,37 +93,42 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
         | UnsupportedTypeAliasDeclarationError
       > =>
         Effect.gen(function* () {
-          const { typeNode, optional } = opts;
+          const { typeNode, optional, inlineDefault } = opts;
           const kind = typeNode.getKind();
 
           const typeNodeMetada = Match.value<SyntaxKind>(kind).pipe(
             Match.when(Match.is(SyntaxKind.StringKeyword), () =>
               Effect.succeed({
                 kind: 'STRING' as const,
+                inlineDefault,
                 optional,
               }),
             ),
             Match.when(Match.is(SyntaxKind.NumberKeyword), () =>
               Effect.succeed({
                 kind: 'NUMBER' as const,
+                inlineDefault,
                 optional,
               }),
             ),
             Match.when(Match.is(SyntaxKind.BooleanKeyword), () =>
               Effect.succeed({
                 kind: 'BOOLEAN' as const,
+                inlineDefault,
                 optional,
               }),
             ),
             Match.when(Match.is(SyntaxKind.UndefinedKeyword), () =>
               Effect.succeed({
                 kind: 'UNDEFINED' as const,
+                inlineDefault,
                 optional,
               }),
             ),
             Match.when(Match.is(SyntaxKind.ArrayType), () =>
               Effect.succeed({
                 kind: 'ARRAY' as const,
+                inlineDefault,
                 optional,
               }),
             ),
@@ -124,12 +141,14 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
               if (literalValue === 'null') {
                 return Effect.succeed({
                   kind: 'NULL' as const,
+                  inlineDefault,
                   optional,
                 });
               }
 
               return Effect.succeed({
                 kind: 'LITERAL' as const,
+                inlineDefault,
                 literalValue,
                 optional,
               });
@@ -152,8 +171,9 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                       }
                       const typeNodeName = member.getNameNode().getText();
                       const optional = member.hasQuestionToken();
+                      const inlineDefault = yield* getInlineDefault(member);
                       const typeNodeMetadata = yield* Effect.suspend(() =>
-                        generateMetadata({ typeNode, optional }),
+                        generateMetadata({ typeNode, optional, inlineDefault }),
                       );
 
                       return {
@@ -165,6 +185,7 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
 
                 return {
                   kind: 'TYPE_LITERAL' as const,
+                  inlineDefault,
                   metadata,
                   optional,
                 };
@@ -202,6 +223,7 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                 return yield* resolveObjectTypeToMetadata({
                   type,
                   contextNode: importType,
+                  inlineDefault,
                   optional,
                 });
               }),
@@ -214,13 +236,22 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                 const members = yield* Effect.all(
                   nodes.map((typeNode) =>
                     Effect.suspend(() =>
-                      generateMetadata({ typeNode, optional: false }),
+                      generateMetadata({
+                        typeNode,
+                        optional: false,
+                        inlineDefault: Option.none<string>(),
+                      }),
                     ),
                   ),
                   { concurrency: 'unbounded' },
                 );
 
-                return { kind: 'TUPLE' as const, optional, members };
+                return {
+                  kind: 'TUPLE' as const,
+                  inlineDefault,
+                  optional,
+                  members,
+                };
               }),
             ),
             Match.when(Match.is(SyntaxKind.TypeReference), () =>
@@ -232,6 +263,7 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                   return {
                     kind: 'DATE' as const,
                     optional,
+                    inlineDefault,
                   };
                 }
 
@@ -239,6 +271,7 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                   return {
                     kind: 'ARRAY' as const,
                     optional,
+                    inlineDefault,
                   };
                 }
 
@@ -254,12 +287,17 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                   }
 
                   const keyType = yield* Effect.suspend(() =>
-                    generateMetadata({ typeNode: keyTypeArg, optional: false }),
+                    generateMetadata({
+                      typeNode: keyTypeArg,
+                      optional: false,
+                      inlineDefault: Option.none<string>(),
+                    }),
                   );
                   const valueType = yield* Effect.suspend(() =>
                     generateMetadata({
                       typeNode: valueTypeArg,
                       optional: false,
+                      inlineDefault: Option.none<string>(),
                     }),
                   );
 
@@ -268,6 +306,7 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                     keyType,
                     valueType,
                     optional,
+                    inlineDefault,
                   };
                 }
 
@@ -287,6 +326,7 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                     type: node.getType(),
                     contextNode: node,
                     optional,
+                    inlineDefault,
                   });
                 }
 
@@ -300,6 +340,7 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                     type,
                     contextNode: node,
                     optional,
+                    inlineDefault,
                   });
                 }
 
@@ -336,6 +377,7 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                     generateMetadata({
                       typeNode: aliasTypeNode,
                       optional,
+                      inlineDefault,
                     }),
                   );
                 }
@@ -343,6 +385,7 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                 return {
                   kind: 'BUILDER' as const,
                   name: declaration.getName(),
+                  inlineDefault,
                   optional,
                 };
               }),
@@ -355,13 +398,22 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                     .getTypeNodes()
                     .map((typeNode) =>
                       Effect.suspend(() =>
-                        generateMetadata({ typeNode, optional: false }),
+                        generateMetadata({
+                          typeNode,
+                          optional: false,
+                          inlineDefault: Option.none<string>(),
+                        }),
                       ),
                     ),
                   { concurrency: 'unbounded' },
                 );
 
-                return { kind: 'UNION' as const, optional, members };
+                return {
+                  kind: 'UNION' as const,
+                  optional,
+                  members,
+                  inlineDefault,
+                };
               }),
             ),
             Match.when(Match.is(SyntaxKind.IntersectionType), () =>
@@ -386,12 +438,14 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                     generateMetadata({
                       typeNode: primitiveType,
                       optional: false,
+                      inlineDefault,
                     }),
                   );
 
                   return {
                     kind: 'TYPE_CAST' as const,
                     baseTypeMetadata: baseMetadata,
+                    inlineDefault,
                     optional,
                   };
                 }
@@ -436,42 +490,50 @@ export type TypeNodeMetadata =
         | 'UNDEFINED'
         | 'NULL'
         | 'ARRAY';
+      inlineDefault: Option.Option<string>;
     }
   | {
       optional: boolean;
       kind: 'UNION';
       members: TypeNodeMetadata[];
+      inlineDefault: Option.Option<string>;
     }
   | {
       optional: boolean;
       kind: 'LITERAL';
       literalValue: string;
+      inlineDefault: Option.Option<string>;
     }
   | {
       optional: boolean;
       kind: 'TYPE_LITERAL';
       metadata: Record<string, TypeNodeMetadata>;
+      inlineDefault: Option.Option<string>;
     }
   | {
       optional: boolean;
       kind: 'TUPLE';
       members: TypeNodeMetadata[];
+      inlineDefault: Option.Option<string>;
     }
   | {
       kind: 'RECORD';
       keyType: TypeNodeMetadata;
       valueType: TypeNodeMetadata;
       optional: boolean;
+      inlineDefault: Option.Option<string>;
     }
   | {
       kind: 'BUILDER';
       name: string;
       optional: boolean;
+      inlineDefault: Option.Option<string>;
     }
   | {
       kind: 'TYPE_CAST';
       baseTypeMetadata: TypeNodeMetadata;
       optional: boolean;
+      inlineDefault: Option.Option<string>;
     };
 
 export class Parser extends Effect.Service<Parser>()('@TSDataBuilders/Parser', {
@@ -552,7 +614,11 @@ export class Parser extends Effect.Service<Parser>()('@TSDataBuilders/Parser', {
           const result: DataBuilderMetadata[] = yield* Effect.all(
             typeLiteralsWithDataBuilder.map(({ name, node }) =>
               typeNodeParser
-                .generateMetadata({ typeNode: node, optional: false })
+                .generateMetadata({
+                  typeNode: node,
+                  optional: false,
+                  inlineDefault: Option.none<string>(),
+                })
                 .pipe(
                   Effect.tap(() =>
                     Effect.logDebug(
@@ -661,3 +727,25 @@ class MultipleSymbolDeclarationsError extends Data.TaggedError(
 )<{
   raw: string;
 }> {}
+
+const getInlineDefault = Effect.fnUntraced(function* (
+  member: PropertySignature,
+) {
+  const jsDocs = member.getJsDocs();
+
+  for (const doc of jsDocs) {
+    const tags = doc.getTags();
+    const defaultTag = tags.find(
+      (tag) => tag.getTagName() === 'DataBuilderDefault',
+    );
+
+    if (defaultTag) {
+      const comment = defaultTag.getComment();
+      if (typeof comment === 'string') {
+        return Option.some(comment.trim());
+      }
+    }
+  }
+
+  return Option.none<string>();
+});
