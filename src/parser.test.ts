@@ -4,6 +4,7 @@ import * as Cause from 'effect/Cause';
 import * as Effect from 'effect/Effect';
 import * as Exit from 'effect/Exit';
 import * as Layer from 'effect/Layer';
+import * as Option from 'effect/Option';
 
 import { Configuration, DEFAULT_CONFIGURATION } from './configuration';
 import { type DataBuilderMetadata, Parser, TypeNodeParser } from './parser';
@@ -125,6 +126,7 @@ describe('Parser', () => {
           name: {
             kind,
             optional: false,
+            inlineDefault: Option.none<string>(),
           },
         });
       }),
@@ -155,6 +157,7 @@ describe('Parser', () => {
           expect(shapeMetadata).toEqual({
             name: expect.objectContaining({
               kind,
+              inlineDefault: Option.none<string>(),
               optional: true,
             }),
           });
@@ -196,6 +199,7 @@ describe('Parser', () => {
           expect(shapeMetadata).toEqual({
             name: {
               kind: 'ARRAY',
+              inlineDefault: Option.none<string>(),
               optional: false,
             },
           });
@@ -218,6 +222,7 @@ describe('Parser', () => {
         expect(shapeMetadata).toEqual({
           name: {
             kind: 'ARRAY',
+            inlineDefault: Option.none<string>(),
             optional: true,
           },
         });
@@ -240,14 +245,43 @@ describe('Parser', () => {
         expect(shapeMetadata).toEqual({
           name: {
             kind: 'UNION',
+            inlineDefault: Option.none<string>(),
             members: [
-              { kind: 'STRING', optional: false },
-              { kind: 'NUMBER', optional: false },
-              { kind: 'BOOLEAN', optional: false },
-              { kind: 'DATE', optional: false },
-              { kind: 'UNDEFINED', optional: false },
-              { kind: 'NULL', optional: false },
-              { kind: 'ARRAY', optional: false },
+              {
+                kind: 'STRING',
+                optional: false,
+                inlineDefault: Option.none<string>(),
+              },
+              {
+                kind: 'NUMBER',
+                optional: false,
+                inlineDefault: Option.none<string>(),
+              },
+              {
+                kind: 'BOOLEAN',
+                optional: false,
+                inlineDefault: Option.none<string>(),
+              },
+              {
+                kind: 'DATE',
+                optional: false,
+                inlineDefault: Option.none<string>(),
+              },
+              {
+                kind: 'UNDEFINED',
+                optional: false,
+                inlineDefault: Option.none<string>(),
+              },
+              {
+                kind: 'NULL',
+                optional: false,
+                inlineDefault: Option.none<string>(),
+              },
+              {
+                kind: 'ARRAY',
+                optional: false,
+                inlineDefault: Option.none<string>(),
+              },
             ],
             optional: false,
           },
@@ -271,6 +305,8 @@ describe('Parser', () => {
         expect(shapeMetadata).toEqual({
           name: expect.objectContaining({
             kind: 'UNION',
+            inlineDefault: Option.none<string>(),
+
             optional: true,
           }),
         });
@@ -295,6 +331,7 @@ describe('Parser', () => {
           expect(shapeMetadata).toEqual({
             name: {
               kind: 'LITERAL',
+              inlineDefault: Option.none<string>(),
               literalValue: `${literalValue}`,
               optional: false,
             },
@@ -318,6 +355,7 @@ describe('Parser', () => {
         expect(shapeMetadata).toEqual({
           name: expect.objectContaining({
             kind: 'LITERAL',
+            inlineDefault: Option.none<string>(),
             optional: true,
           }),
         });
@@ -340,13 +378,16 @@ describe('Parser', () => {
         expect(shapeMetadata).toEqual({
           name: {
             kind: 'TYPE_LITERAL',
+            inlineDefault: Option.none<string>(),
             metadata: {
               firstName: {
                 kind: 'STRING',
+                inlineDefault: Option.none<string>(),
                 optional: false,
               },
               lastName: {
                 kind: 'STRING',
+                inlineDefault: Option.none<string>(),
                 optional: false,
               },
             },
@@ -372,18 +413,22 @@ describe('Parser', () => {
         expect(shapeMetadata).toEqual({
           profile: {
             kind: 'TYPE_LITERAL',
+            inlineDefault: Option.none<string>(),
             optional: false,
             metadata: {
               name: {
                 kind: 'TYPE_LITERAL',
+                inlineDefault: Option.none<string>(),
                 optional: false,
                 metadata: {
                   firstName: {
                     kind: 'STRING',
+                    inlineDefault: Option.none<string>(),
                     optional: false,
                   },
                   lastName: {
                     kind: 'STRING',
+                    inlineDefault: Option.none<string>(),
                     optional: false,
                   },
                 },
@@ -411,9 +456,11 @@ describe('Parser', () => {
         expect(shapeMetadata).toEqual({
           name: {
             kind: 'TYPE_LITERAL',
+            inlineDefault: Option.none<string>(),
             metadata: {
               foo: {
                 kind: 'STRING',
+                inlineDefault: Option.none<string>(),
                 optional: false,
               },
             },
@@ -442,6 +489,7 @@ describe('Parser', () => {
           expect(shapeMetadata).toEqual({
             name: expect.objectContaining({
               kind: 'TYPE_LITERAL',
+              inlineDefault: Option.none<string>(),
               optional: true,
             }),
           });
@@ -465,9 +513,11 @@ describe('Parser', () => {
         expect(shapeMetadata).toEqual({
           name: {
             kind: 'TYPE_LITERAL',
+            inlineDefault: Option.none<string>(),
             metadata: {
               foo: {
                 kind: 'STRING',
+                inlineDefault: Option.none<string>(),
                 optional: false,
               },
             },
@@ -496,6 +546,7 @@ describe('Parser', () => {
           expect(shapeMetadata).toEqual({
             name: expect.objectContaining({
               kind: 'TYPE_LITERAL',
+              inlineDefault: Option.none<string>(),
               optional: true,
             }),
           });
@@ -521,9 +572,11 @@ describe('Parser', () => {
           expect(shapeMetadata).toEqual({
             name: {
               kind: 'TYPE_LITERAL',
+              inlineDefault: Option.none<string>(),
               metadata: {
                 foo: {
                   kind: 'STRING',
+                  inlineDefault: Option.none<string>(),
                   optional: true,
                 },
               },
@@ -552,6 +605,7 @@ describe('Parser', () => {
           expect(shapeMetadata).toEqual({
             name: expect.objectContaining({
               kind: 'TYPE_LITERAL',
+              inlineDefault: Option.none<string>(),
               optional: true,
             }),
           });
@@ -577,9 +631,11 @@ describe('Parser', () => {
           expect(shapeMetadata).toEqual({
             name: {
               kind: 'TYPE_LITERAL',
+              inlineDefault: Option.none<string>(),
               metadata: {
                 foo: {
                   kind: 'STRING',
+                  inlineDefault: Option.none<string>(),
                   optional: false,
                 },
               },
@@ -608,6 +664,7 @@ describe('Parser', () => {
           expect(shapeMetadata).toEqual({
             name: expect.objectContaining({
               kind: 'TYPE_LITERAL',
+              inlineDefault: Option.none<string>(),
               optional: true,
             }),
           });
@@ -633,9 +690,11 @@ describe('Parser', () => {
           expect(shapeMetadata).toEqual({
             name: {
               kind: 'TYPE_LITERAL',
+              inlineDefault: Option.none<string>(),
               metadata: {
                 foo: {
                   kind: 'STRING',
+                  inlineDefault: Option.none<string>(),
                   optional: false,
                 },
               },
@@ -664,6 +723,7 @@ describe('Parser', () => {
           expect(shapeMetadata).toEqual({
             name: expect.objectContaining({
               kind: 'TYPE_LITERAL',
+              inlineDefault: Option.none<string>(),
               optional: true,
             }),
           });
@@ -689,13 +749,20 @@ describe('Parser', () => {
           expect(shapeMetadata).toEqual({
             name: {
               kind: 'TYPE_LITERAL',
+              inlineDefault: Option.none<string>(),
               metadata: {
                 type: {
                   kind: 'LITERAL',
+                  inlineDefault: Option.none<string>(),
                   literalValue: '"bar"',
                   optional: false,
                 },
-                bar: { kind: 'STRING', optional: false },
+                bar: {
+                  kind: 'STRING',
+                  optional: false,
+
+                  inlineDefault: Option.none<string>(),
+                },
               },
               optional: false,
             },
@@ -722,6 +789,7 @@ describe('Parser', () => {
           expect(shapeMetadata).toEqual({
             name: expect.objectContaining({
               kind: 'TYPE_LITERAL',
+              inlineDefault: Option.none<string>(),
               optional: true,
             }),
           });
@@ -747,9 +815,11 @@ describe('Parser', () => {
           expect(shapeMetadata).toEqual({
             name: {
               kind: 'TYPE_LITERAL',
+              inlineDefault: Option.none<string>(),
               metadata: {
                 name: {
                   kind: 'STRING',
+                  inlineDefault: Option.none<string>(),
                   optional: false,
                 },
               },
@@ -778,6 +848,7 @@ describe('Parser', () => {
           expect(shapeMetadata).toEqual({
             name: expect.objectContaining({
               kind: 'TYPE_LITERAL',
+              inlineDefault: Option.none<string>(),
               optional: true,
             }),
           });
@@ -802,18 +873,22 @@ describe('Parser', () => {
           expect(shapeMetadata).toEqual({
             profile: {
               kind: 'TYPE_LITERAL',
+              inlineDefault: Option.none<string>(),
               optional: true,
               metadata: {
                 name: {
                   kind: 'TYPE_LITERAL',
+                  inlineDefault: Option.none<string>(),
                   optional: true,
                   metadata: {
                     firstName: {
                       kind: 'STRING',
+                      inlineDefault: Option.none<string>(),
                       optional: false,
                     },
                     lastName: {
                       kind: 'STRING',
+                      inlineDefault: Option.none<string>(),
                       optional: true,
                     },
                   },
@@ -840,9 +915,20 @@ describe('Parser', () => {
         expect(shapeMetadata).toEqual({
           name: {
             kind: 'TUPLE',
+            inlineDefault: Option.none<string>(),
             members: [
-              { kind: 'STRING', optional: false },
-              { kind: 'NUMBER', optional: false },
+              {
+                kind: 'STRING',
+                optional: false,
+
+                inlineDefault: Option.none<string>(),
+              },
+              {
+                kind: 'NUMBER',
+                optional: false,
+
+                inlineDefault: Option.none<string>(),
+              },
             ],
             optional: false,
           },
@@ -866,6 +952,7 @@ describe('Parser', () => {
         expect(shapeMetadata).toEqual({
           name: expect.objectContaining({
             kind: 'TUPLE',
+            inlineDefault: Option.none<string>(),
             optional: true,
           }),
         });
@@ -888,8 +975,17 @@ describe('Parser', () => {
         expect(shapeMetadata).toEqual({
           name: {
             kind: 'RECORD',
-            keyType: { kind: 'STRING', optional: false },
-            valueType: { kind: 'NUMBER', optional: false },
+            inlineDefault: Option.none<string>(),
+            keyType: {
+              kind: 'STRING',
+              optional: false,
+              inlineDefault: Option.none<string>(),
+            },
+            valueType: {
+              kind: 'NUMBER',
+              optional: false,
+              inlineDefault: Option.none<string>(),
+            },
             optional: false,
           },
         });
@@ -912,6 +1008,7 @@ describe('Parser', () => {
         expect(shapeMetadata).toEqual({
           name: expect.objectContaining({
             kind: 'RECORD',
+            inlineDefault: Option.none<string>(),
             optional: true,
           }),
         });
@@ -938,6 +1035,7 @@ describe('Parser', () => {
         expect(shapeMetadata).toEqual({
           bar: {
             kind: 'BUILDER',
+            inlineDefault: Option.none<string>(),
             name: 'Bar',
             optional: false,
           },
@@ -965,6 +1063,7 @@ describe('Parser', () => {
         expect(shapeMetadata).toEqual({
           bar: expect.objectContaining({
             kind: 'BUILDER',
+            inlineDefault: Option.none<string>(),
             optional: true,
           }),
         });
@@ -987,8 +1086,10 @@ describe('Parser', () => {
         expect(shapeMetadata).toEqual({
           name: {
             kind: 'TYPE_CAST',
+            inlineDefault: Option.none<string>(),
             baseTypeMetadata: {
               kind: 'STRING',
+              inlineDefault: Option.none<string>(),
               optional: false,
             },
             optional: false,
@@ -1013,6 +1114,7 @@ describe('Parser', () => {
         expect(shapeMetadata).toEqual({
           name: expect.objectContaining({
             kind: 'TYPE_CAST',
+            inlineDefault: Option.none<string>(),
             optional: true,
           }),
         });
@@ -1037,6 +1139,7 @@ describe('Parser', () => {
         expect(shapeMetadata).toEqual({
           name: {
             kind: 'STRING',
+            inlineDefault: Option.none<string>(),
             optional: false,
           },
         });
@@ -1063,6 +1166,7 @@ describe('Parser', () => {
           expect(shapeMetadata).toEqual({
             name: {
               kind: 'STRING',
+              inlineDefault: Option.none<string>(),
               optional: false,
             },
           });

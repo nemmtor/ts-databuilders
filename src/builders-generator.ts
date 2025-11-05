@@ -4,6 +4,7 @@ import * as FileSystem from '@effect/platform/FileSystem';
 import * as Path from '@effect/platform/Path';
 import * as Effect from 'effect/Effect';
 import * as Match from 'effect/Match';
+import * as Option from 'effect/Option';
 import * as Schema from 'effect/Schema';
 
 import * as Configuration from './configuration';
@@ -22,11 +23,12 @@ class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
       const process = yield* Process.Process;
       const configuration = yield* Configuration.Configuration;
       const idGenerator = yield* IdGenerator.IdGenerator;
-      const { fileSuffix, builderSuffix, defaults } = configuration;
 
+      const { fileSuffix, builderSuffix, defaults } = configuration;
       const getDefaultValueLiteral = (
         typeNodeMetadata: TypeNodeParser.TypeNodeMetadata,
       ): string | number | boolean =>
+        Option.getOrUndefined(typeNodeMetadata.inlineDefault) ??
         Match.value(typeNodeMetadata).pipe(
           Match.when({ kind: 'STRING' }, () => `"${defaults.string}"`),
           Match.when({ kind: 'NUMBER' }, () => defaults.number),

@@ -16,10 +16,16 @@ import type {
  * @DataBuilder
  */
 export type Bar = {
+  /** @DataBuilderDefault "foo" */
   str: string;
+  /** @DataBuilderDefault 1994 */
   num: number;
+  /** @DataBuilderDefault true */
   bool: boolean;
+  /** @DataBuilderDefault new Date(123) */
   date: Date;
+  /** @DataBuilderDefault new Date(123).toISOString() */
+  createdAt: string;
   undef: undefined;
   maybeString?: string;
   unionz: string | number | undefined | null | Date | boolean | false | true;
