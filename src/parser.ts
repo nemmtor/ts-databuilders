@@ -21,7 +21,7 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
   '@TSDataBuilders/TypeNodeParser',
   {
     effect: Effect.gen(function* () {
-      const { jsdocTag, inlineDefaultJsdocTag } =
+      const { jsdocTag, inlineDefaultJsdocTag, withNestedBuilders } =
         yield* Configuration.Configuration;
       const idGenerator = yield* IdGenerator.IdGenerator;
 
@@ -394,7 +394,7 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                   });
                 }
 
-                if (!hasBuilder) {
+                if (!hasBuilder || !withNestedBuilders) {
                   return yield* Effect.suspend(() =>
                     generateMetadata({
                       typeNode: aliasTypeNode,

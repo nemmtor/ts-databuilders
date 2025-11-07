@@ -14,6 +14,10 @@
       "type": "string",
       "description": "JSDoc tag used to set default value of given field."
     },
+    "withNestedBuilders": {
+      "type": "boolean",
+      "description": "When set to true ts-databuilders will use nested builders approach."
+    },
     "outputDir": {
       "type": "string",
       "description": "Output directory for generated builders."

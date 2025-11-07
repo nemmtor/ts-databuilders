@@ -46,6 +46,12 @@ export const createJsonConfig = (opts: Configuration.CliConfigurationShape) =>
           () => Configuration.DEFAULT_CONFIGURATION.inlineDefaultJsdocTag,
         ),
       ),
+      withNestedBuilders: opts.withNestedBuilders.pipe(
+        Option.getOrElse(
+          () => Configuration.DEFAULT_CONFIGURATION.withNestedBuilders,
+        ),
+      ),
+
       outputDir: opts.outputDir.pipe(
         Option.getOrElse(() => Configuration.DEFAULT_CONFIGURATION.outputDir),
       ),

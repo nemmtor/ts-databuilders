@@ -1107,6 +1107,36 @@ describe('Parser', () => {
       }),
     );
 
+    // it.effect(
+    //   'should correctly generate TYPE_LITERAL metadata instead of BUILDER when nested builders are turned off',
+    //   () =>
+    //     Effect.gen(function* () {
+    //       const configuration = yield* Configuration;
+    //       fsReadFileStringMock.mockReturnValueOnce(
+    //         Effect.succeed(`
+    //       /** @${configuration.jsdocTag} */
+    //       export type Bar = { name: string; };
+    //       /** @${configuration.jsdocTag} */
+    //       export type Foo = { bar: Bar; };`),
+    //       );
+    //       const parser = yield* Parser;
+    //
+    //       const results = (yield* parser.generateBuildersMetadata(
+    //         'test.ts',
+    //       )).filter((v) => v.name === 'Foo');
+    //       const [shapeMetadata] = getBuildersShapeMetadata(results);
+    //
+    //       expect(shapeMetadata).toEqual({
+    //         bar: {
+    //           kind: 'TYPE_LITERAL',
+    //           inlineDefault: Option.none<string>(),
+    //           name: 'Bar',
+    //           optional: false,
+    //         },
+    //       });
+    //     }),
+    // );
+
     it.effect('should correctly generate TYPE_CAST metadata', () =>
       Effect.gen(function* () {
         const configuration = yield* Configuration;
