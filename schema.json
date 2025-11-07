@@ -10,6 +10,10 @@
       "type": "string",
       "description": "JSDoc tag used to mark types for data building generation."
     },
+    "inlineDefaultJsdocTag": {
+      "type": "string",
+      "description": "JSDoc tag used to set default value of given field."
+    },
     "outputDir": {
       "type": "string",
       "description": "Output directory for generated builders."

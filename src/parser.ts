@@ -21,63 +21,85 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
   '@TSDataBuilders/TypeNodeParser',
   {
     effect: Effect.gen(function* () {
-      const { jsdocTag } = yield* Configuration.Configuration;
+      const { jsdocTag, inlineDefaultJsdocTag } =
+        yield* Configuration.Configuration;
       const idGenerator = yield* IdGenerator.IdGenerator;
 
-      const resolveObjectTypeToMetadata = (opts: {
+      const getInlineDefault = Effect.fnUntraced(function* (
+        member: PropertySignature,
+      ) {
+        const jsDocs = member.getJsDocs();
+
+        for (const doc of jsDocs) {
+          const tags = doc.getTags();
+          const defaultTag = tags.find(
+            (tag) => tag.getTagName() === inlineDefaultJsdocTag,
+          );
+
+          if (defaultTag) {
+            const comment = defaultTag.getComment();
+            if (typeof comment === 'string') {
+              return Option.some(comment.trim());
+            }
+          }
+        }
+
+        return Option.none<string>();
+      });
+
+      const resolveObjectTypeToMetadata = Effect.fnUntraced(function* (opts: {
         type: Type;
         contextNode: TypeNode;
         optional: boolean;
         inlineDefault: Option.Option<string>;
-      }) =>
-        Effect.gen(function* () {
-          const { type, contextNode, optional, inlineDefault } = opts;
-          const props = type.getProperties();
+      }) {
+        const { type, contextNode, optional, inlineDefault } = opts;
+        const props = type.getProperties();
 
-          if (!type.isObject() || props.length === 0) {
-            return yield* new CannotBuildTypeReferenceMetadataError({
-              raw: type.getText(),
-              kind: contextNode.getKind(),
-            });
-          }
+        if (!type.isObject() || props.length === 0) {
+          return yield* new CannotBuildTypeReferenceMetadataError({
+            raw: type.getText(),
+            kind: contextNode.getKind(),
+          });
+        }
 
-          const metadata: Record<string, TypeNodeMetadata> = {};
+        const metadata: Record<string, TypeNodeMetadata> = {};
 
-          for (const prop of props) {
-            const propName = prop.getName();
-            const propType = prop.getTypeAtLocation(contextNode);
-            const isOptional = prop.isOptional();
+        for (const prop of props) {
+          const propName = prop.getName();
+          const propType = prop.getTypeAtLocation(contextNode);
+          const isOptional = prop.isOptional();
 
-            const tempSource = contextNode
-              .getProject()
-              .createSourceFile(
-                `__temp_${yield* idGenerator.generateUuid}.ts`,
-                `type __T = ${propType.getText()}`,
-                { overwrite: true },
-              );
-            const tempTypeNode = tempSource
-              .getTypeAliasOrThrow('__T')
-              .getTypeNodeOrThrow();
-            const propMetadata = yield* Effect.suspend(() =>
-              generateMetadata({
-                typeNode: tempTypeNode,
-                optional: isOptional,
-                // TODO: double check if it should resolve inlineDefault
-                inlineDefault: Option.none<string>(),
-              }),
+          const tempSource = contextNode
+            .getProject()
+            .createSourceFile(
+              `__temp_${yield* idGenerator.generateUuid}.ts`,
+              `type __T = ${propType.getText()}`,
+              { overwrite: true },
             );
+          const tempTypeNode = tempSource
+            .getTypeAliasOrThrow('__T')
+            .getTypeNodeOrThrow();
+          const propMetadata = yield* Effect.suspend(() =>
+            generateMetadata({
+              typeNode: tempTypeNode,
+              optional: isOptional,
+              // TODO: double check if it should resolve inlineDefault
+              inlineDefault: Option.none<string>(),
+            }),
+          );
 
-            metadata[propName] = propMetadata;
-            contextNode.getProject().removeSourceFile(tempSource);
-          }
+          metadata[propName] = propMetadata;
+          contextNode.getProject().removeSourceFile(tempSource);
+        }
 
-          return {
-            kind: 'TYPE_LITERAL' as const,
-            metadata,
-            inlineDefault,
-            optional,
-          };
-        });
+        return {
+          kind: 'TYPE_LITERAL' as const,
+          metadata,
+          inlineDefault,
+          optional,
+        };
+      });
 
       const generateMetadata = (opts: {
         typeNode: TypeNode;
@@ -727,25 +749,3 @@ class MultipleSymbolDeclarationsError extends Data.TaggedError(
 )<{
   raw: string;
 }> {}
-
-const getInlineDefault = Effect.fnUntraced(function* (
-  member: PropertySignature,
-) {
-  const jsDocs = member.getJsDocs();
-
-  for (const doc of jsDocs) {
-    const tags = doc.getTags();
-    const defaultTag = tags.find(
-      (tag) => tag.getTagName() === 'DataBuilderDefault',
-    );
-
-    if (defaultTag) {
-      const comment = defaultTag.getComment();
-      if (typeof comment === 'string') {
-        return Option.some(comment.trim());
-      }
-    }
-  }
-
-  return Option.none<string>();
-});

@@ -17,6 +17,12 @@ const jsdocTag = Options.text('jsdoc-tag').pipe(
   Options.optional,
 );
 
+const inlineDefaultJsdocTag = Options.text('inline-default-jsdoc-tag').pipe(
+  Options.withDescription(CONSTANTS.DESCRIPTIONS.inlineDefaultJsdocTag),
+  Options.withSchema(Configuration.CliConfigurationSchema.fields.jsdocTag),
+  Options.optional,
+);
+
 const outputDir = Options.text('output-dir').pipe(
   Options.withAlias('o'),
   Options.withDescription(CONSTANTS.DESCRIPTIONS.outputDir),
@@ -72,6 +78,7 @@ export const options = {
   defaultString,
   defaultNumber,
   defaultBoolean,
+  inlineDefaultJsdocTag,
 };
 
 const initCommand = Command.make('init', options).pipe(
