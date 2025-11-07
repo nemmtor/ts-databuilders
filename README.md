@@ -15,33 +15,57 @@ yarn add -D @nemmtor/ts-databuilders
 ```
 
 ## Configuration
-All configuration is optional with sensible defaults.
-
-### Initialize Config File (optional)
-Generate a default `ts-databuilders.json` configuration file:
-```bash
-pnpm ts-databuilders init
-```
-You can also generate configuration file by providing values step by step in an interactive wizard:
-```bash
-pnpm ts-databuilders init --wizard
-```
+Configuration is optional - it fallbacks to sensible defaults.
 
 ### Configure via CLI flags (optional):
 ```bash
-pnpm ts-databuilders --output-dir="src/__generated__" --jsdoc-tag=MyBuilder
+pnpm ts-databuilders --include "src/**/*.ts{,x}" --output-dir src/__generated__ --jsdoc-tag DataBuilder
 ```
 You can also provide configuration by going through interactive wizard:
 ```bash
 pnpm ts-databuilders --wizard
 ```
 
+### Configure via config file (optional)
+Ts-databuilders will try to find config file `ts-databuilders.json` in the root of your repository.
+Config file is optional.
+
+Example of default config file:
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/nemmtor/ts-databuilders/refs/heads/main/schema.json",
+  "jsdocTag": "DataBuilder",
+  "inlineDefaultJsdocTag": "DataBuilderDefault",
+  "withNestedBuilders": true,
+  "outputDir": "generated/builders",
+  "include": "src/**/*.ts{,x}",
+  "fileSuffix": ".builder",
+  "builderSuffix": "Builder",
+  "defaults": {
+    "string": "",
+    "number": 0,
+    "boolean": false
+  }
+}
+```
+
+You can generate a default configuration file by running `init` command:
+```bash
+pnpm ts-databuilders init
+```
+You can also generate it by providing values step by step in an interactive wizard:
+```bash
+pnpm ts-databuilders init --wizard
+```
+
+
 ### Options Reference
 
-| Name          | Flag                                                  | Description                             | Default              |
+| Name (in config file)          | Flag (cli flags)                                                  | Description                             | Default              |
 |---------------|-------------------------------------------------------|-----------------------------------------|----------------------|
 | jsdocTag      | `--jsdoc-tag`                                         | JSDoc tag to mark types for generation  | `DataBuilder`        |
-| inlineDefaultJsdocTag      | `--inline-default-jsdoc-tag`                                         | JSDoc tag used to set default value of given field.  | `DataBuilderDefault`        |
+| inlineDefaultJsdocTag      | `--inline-default-jsdoc-tag`                                         | JSDoc tag used to set default value of given field  | `DataBuilderDefault`        |
+| withNestedBuilders      | `--with-nested-builders`                                         | When set to true ts-databuilders will use nested builders approach  | `true`        |
 | outputDir     | `--output-dir -o`                                     | Output directory for generated builders | `generated/builders` |
 | include       | `--include -i`                                        | Glob pattern for source files           | `src/**/*.ts{,x}`    |
 | fileSuffix    | `--file-suffix`                                       | File suffix for builder files           | `.builder`           |
@@ -200,6 +224,9 @@ This not only makes the test code less verbose but also highlights what is reall
 [Read more about data builders.](http://www.natpryce.com/articles/000714.html)
 
 ## Nested Builders
+> [!NOTE]
+> Nested builders can be turned off by using withNestedBuilders option. Check configuration section for more details.
+
 When your types contain complex nested objects, you can annotate their type definitions and TS DataBuilders will automatically generate nested builders, allowing you to compose them fluently.
 ### Example
 
@@ -291,6 +318,8 @@ const userWithCity = new UserBuilder()
 ```
 
 ## Inline Default Values
+> [!NOTE]
+> It's your responsibility to provide inline default value that satisfies expected type.
 
 While global defaults work well for most cases, sometimes you need field-specific default values. This is especially important for specialized string types like ISO dates, UUIDs etc.
 
@@ -316,7 +345,7 @@ Use `@DataBuilderDefault` JSDoc tag to override defaults per field:
 type Order = {
   /** @DataBuilderDefault '550e8400-e29b-41d4-a716-446655440000' */
   id: string;
-  
+
   /** @DataBuilderDefault '2025-11-05T15:32:58.727Z' */
   createdAt: string;
 }

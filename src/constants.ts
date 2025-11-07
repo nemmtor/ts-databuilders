@@ -1,6 +1,8 @@
 export const DESCRIPTIONS = {
   jsdocTag: 'JSDoc tag used to mark types for data building generation.',
   inlineDefaultJsdocTag: 'JSDoc tag used to set default value of given field.',
+  withNestedbuilders:
+    'When set to true ts-databuilders will use nested builders approach.',
   outputDir: 'Output directory for generated builders.',
   include: 'Glob pattern for files included while searching for jsdoc tag.',
   fileSuffix: 'File suffix for created builder files.',

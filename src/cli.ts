@@ -19,7 +19,17 @@ const jsdocTag = Options.text('jsdoc-tag').pipe(
 
 const inlineDefaultJsdocTag = Options.text('inline-default-jsdoc-tag').pipe(
   Options.withDescription(CONSTANTS.DESCRIPTIONS.inlineDefaultJsdocTag),
-  Options.withSchema(Configuration.CliConfigurationSchema.fields.jsdocTag),
+  Options.withSchema(
+    Configuration.CliConfigurationSchema.fields.inlineDefaultJsdocTag,
+  ),
+  Options.optional,
+);
+
+const withNestedBuilders = Options.text('with-nested-builders').pipe(
+  Options.withDescription(CONSTANTS.DESCRIPTIONS.withNestedbuilders),
+  Options.withSchema(
+    Configuration.CliConfigurationSchema.fields.withNestedBuilders,
+  ),
   Options.optional,
 );
 
@@ -72,6 +82,7 @@ const defaultBoolean = Options.text('default-boolean').pipe(
 export const options = {
   jsdocTag,
   outputDir,
+  withNestedBuilders,
   include,
   fileSuffix,
   builderSuffix,

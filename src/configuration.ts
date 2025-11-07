@@ -14,6 +14,7 @@ export const CONFIG_FILE_NAME = 'ts-databuilders.json';
 const ConfigurationSchema = Schema.Struct({
   jsdocTag: Schema.NonEmptyTrimmedString,
   inlineDefaultJsdocTag: Schema.NonEmptyTrimmedString,
+  withNestedBuilders: Schema.Boolean,
   outputDir: Schema.NonEmptyTrimmedString,
   include: Schema.NonEmptyTrimmedString,
   fileSuffix: Schema.NonEmptyTrimmedString,
@@ -28,6 +29,7 @@ const ConfigurationSchema = Schema.Struct({
 export const DEFAULT_CONFIGURATION = ConfigurationSchema.make({
   jsdocTag: 'DataBuilder',
   inlineDefaultJsdocTag: 'DataBuilderDefault',
+  withNestedBuilders: true,
   outputDir: 'generated/builders',
   include: 'src/**/*.ts{,x}',
   fileSuffix: '.builder',
@@ -48,6 +50,11 @@ export const ConfigurationFileSchema = Schema.Struct({
   inlineDefaultJsdocTag: Schema.String.pipe(
     Schema.annotations({
       description: CONSTANTS.DESCRIPTIONS.inlineDefaultJsdocTag,
+    }),
+  ),
+  withNestedBuilders: Schema.Boolean.pipe(
+    Schema.annotations({
+      description: CONSTANTS.DESCRIPTIONS.withNestedbuilders,
     }),
   ),
   outputDir: Schema.String.pipe(
@@ -90,6 +97,7 @@ export class Configuration extends Context.Tag('Configuration')<
 export const CliConfigurationSchema = Schema.Struct({
   jsdocTag: Schema.NonEmptyTrimmedString,
   inlineDefaultJsdocTag: Schema.NonEmptyTrimmedString,
+  withNestedBuilders: Schema.BooleanFromString,
   outputDir: Schema.NonEmptyTrimmedString,
   include: Schema.NonEmptyTrimmedString,
   fileSuffix: Schema.NonEmptyTrimmedString,
@@ -147,6 +155,7 @@ const resolveConfig = (opts: {
     const config = {
       builderSuffix: yield* resolve('builderSuffix'),
       include: yield* resolve('include'),
+      withNestedBuilders: yield* resolve('withNestedBuilders'),
       fileSuffix: yield* resolve('fileSuffix'),
       jsdocTag: yield* resolve('jsdocTag'),
       inlineDefaultJsdocTag: yield* resolve('inlineDefaultJsdocTag'),
