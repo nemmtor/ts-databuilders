@@ -41,6 +41,11 @@ export const createJsonConfig = (opts: Configuration.CliConfigurationShape) =>
       jsdocTag: opts.jsdocTag.pipe(
         Option.getOrElse(() => Configuration.DEFAULT_CONFIGURATION.jsdocTag),
       ),
+      inlineDefaultJsdocTag: opts.inlineDefaultJsdocTag.pipe(
+        Option.getOrElse(
+          () => Configuration.DEFAULT_CONFIGURATION.inlineDefaultJsdocTag,
+        ),
+      ),
       outputDir: opts.outputDir.pipe(
         Option.getOrElse(() => Configuration.DEFAULT_CONFIGURATION.outputDir),
       ),

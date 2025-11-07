@@ -133,6 +133,43 @@ describe('Parser', () => {
     );
 
     it.effect.each([
+      { kind: 'STRING', typeValue: 'string', inlineDefault: "'test'" },
+      { kind: 'NUMBER', typeValue: 'number', inlineDefault: '1' },
+      { kind: 'BOOLEAN', typeValue: 'boolean', inlineDefault: 'true' },
+      {
+        kind: 'DATE',
+        typeValue: 'Date',
+        inlineDefault: 'new Date("2025-11-07T11:12:22.970Z")',
+      },
+    ])(
+      'should correctly generate $kind metadata with inline default',
+      ({ kind, typeValue, inlineDefault }) =>
+        Effect.gen(function* () {
+          const configuration = yield* Configuration;
+          fsReadFileStringMock.mockReturnValueOnce(
+            Effect.succeed(`
+          /** @${configuration.jsdocTag} */
+          export type Foo = {
+            /** @${configuration.inlineDefaultJsdocTag} ${inlineDefault} */
+            name: ${typeValue};
+          }`),
+          );
+          const parser = yield* Parser;
+
+          const results = yield* parser.generateBuildersMetadata('test.ts');
+          const [shapeMetadata] = getBuildersShapeMetadata(results);
+
+          expect(shapeMetadata).toEqual({
+            name: {
+              kind,
+              optional: false,
+              inlineDefault: Option.some<string>(inlineDefault),
+            },
+          });
+        }),
+    );
+
+    it.effect.each([
       { kind: 'STRING', typeValue: 'string' },
       { kind: 'NUMBER', typeValue: 'number' },
       { kind: 'BOOLEAN', typeValue: 'boolean' },

@@ -41,6 +41,7 @@ pnpm ts-databuilders --wizard
 | Name          | Flag                                                  | Description                             | Default              |
 |---------------|-------------------------------------------------------|-----------------------------------------|----------------------|
 | jsdocTag      | `--jsdoc-tag`                                         | JSDoc tag to mark types for generation  | `DataBuilder`        |
+| inlineDefaultJsdocTag      | `--inline-default-jsdoc-tag`                                         | JSDoc tag used to set default value of given field.  | `DataBuilderDefault`        |
 | outputDir     | `--output-dir -o`                                     | Output directory for generated builders | `generated/builders` |
 | include       | `--include -i`                                        | Glob pattern for source files           | `src/**/*.ts{,x}`    |
 | fileSuffix    | `--file-suffix`                                       | File suffix for builder files           | `.builder`           |
@@ -289,7 +290,47 @@ const userWithCity = new UserBuilder()
 // {..., address: { street: "", city: "San Francisco", country: "" } }
 ```
 
-### Supported Types
+## Inline Default Values
+
+While global defaults work well for most cases, sometimes you need field-specific default values. This is especially important for specialized string types like ISO dates, UUIDs etc.
+
+```typescript
+/** @DataBuilder */
+type Order = {
+  id: string;           // Empty string - won't work as UUID
+  createdAt: string;    // Empty string - Invalid Date!
+}
+
+// Generated:
+constructor() {
+  super({
+    id: "",
+    createdAt: "",  // new Date("") = Invalid Date
+  });
+}
+```
+
+Use `@DataBuilderDefault` JSDoc tag to override defaults per field:
+```typescript
+/** @DataBuilder */
+type Order = {
+  /** @DataBuilderDefault '550e8400-e29b-41d4-a716-446655440000' */
+  id: string;
+  
+  /** @DataBuilderDefault '2025-11-05T15:32:58.727Z' */
+  createdAt: string;
+}
+
+// Generated:
+constructor() {
+  super({
+    id: '550e8400-e29b-41d4-a716-446655440000',
+    createdAt: '2025-11-05T15:32:58.727Z',
+  });
+}
+```
+
+## Supported Types
 
 The library supports a wide range of TypeScript type features:
 
