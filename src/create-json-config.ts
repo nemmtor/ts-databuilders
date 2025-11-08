@@ -35,6 +35,9 @@ export const createJsonConfig = (opts: Configuration.CliConfigurationShape) =>
       fileSuffix: opts.fileSuffix.pipe(
         Option.getOrElse(() => Configuration.DEFAULT_CONFIGURATION.fileSuffix),
       ),
+      fileCase: opts.fileCase.pipe(
+        Option.getOrElse(() => Configuration.DEFAULT_CONFIGURATION.fileCase),
+      ),
       include: opts.include.pipe(
         Option.getOrElse(() => Configuration.DEFAULT_CONFIGURATION.include),
       ),

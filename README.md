@@ -40,6 +40,7 @@ Example of default config file:
   "outputDir": "generated/builders",
   "include": "src/**/*.ts{,x}",
   "fileSuffix": ".builder",
+  "fileCase": "kebab",
   "builderSuffix": "Builder",
   "defaults": {
     "string": "",
@@ -69,6 +70,7 @@ pnpm ts-databuilders init --wizard
 | outputDir     | `--output-dir -o`                                     | Output directory for generated builders | `generated/builders` |
 | include       | `--include -i`                                        | Glob pattern for source files           | `src/**/*.ts{,x}`    |
 | fileSuffix    | `--file-suffix`                                       | File suffix for builder files           | `.builder`           |
+| fileCase    | `--file-case`                                       | Naming convention for generated builder file, one of 3: `kebab`, `camel`, `pascal`           | `kebab`           |
 | builderSuffix | `--builder-suffix`                                    | Class name suffix                       | `Builder`            |
 | defaults      | `--default-string --default-number --default-boolean` | Default values for primitives           | See example above    |
 

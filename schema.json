@@ -30,6 +30,11 @@
       "type": "string",
       "description": "File suffix for created builder files."
     },
+    "fileCase": {
+      "type": "string",
+      "enum": ["kebab", "camel", "pascal"],
+      "description": "Naming convention for generated builder file"
+    },
     "builderSuffix": {
       "type": "string",
       "description": "Suffix for generated classes."

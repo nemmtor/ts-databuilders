@@ -6,6 +6,7 @@
   "outputDir": "generated/builders",
   "include": "example-data/**",
   "fileSuffix": ".builder",
+  "fileCase": "kebab",
   "builderSuffix": "Builder",
   "defaults": {
     "string": "",
