@@ -4,6 +4,9 @@ import type {
   ExternalDiscUnionExcluded,
   ExternalExcludedDiscUnion,
   ExternalFoo1Excluded,
+  ExternalInters,
+  ExternalIntersMem1,
+  ExternalIntersMem2,
   ExternalNullable,
   ExternalsDiscUnion,
   ExternalsUnion,
@@ -113,6 +116,11 @@ export type Bar = {
   excludedExternalDiscUnion: ExternalExcludedDiscUnion;
   externalfoo1Excluded: ExternalFoo1Excluded;
   externalDiscUnionExcluded: ExternalDiscUnionExcluded;
+  intersection: { bar: string } & { baz: string };
+  inlineRefIntersection: IntersMem1 & IntersMem2;
+  inlineRef: Inters;
+  externalInlineRefIntersection: ExternalIntersMem1 & ExternalIntersMem2;
+  externalInlineRef: ExternalInters;
 };
 
 type Foo = {
@@ -128,3 +136,7 @@ type OptionalFoo = {
 };
 
 type FooBranded = number & { __brand: 'something' };
+
+type IntersMem1 = { bar: string };
+type IntersMem2 = { baz: string };
+type Inters = IntersMem1 & IntersMem2;

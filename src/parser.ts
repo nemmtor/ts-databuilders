@@ -472,6 +472,45 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                   };
                 }
 
+                const type = node.getType();
+                const props = type.getProperties();
+                if (props.length > 0) {
+                  const metadata: Record<string, TypeNodeMetadata> = {};
+                  for (const prop of props) {
+                    const propName = prop.getName();
+                    const propType = prop.getTypeAtLocation(node);
+                    const isOptional = prop.isOptional();
+
+                    const tempSource = node
+                      .getProject()
+                      .createSourceFile(
+                        `__temp_${yield* idGenerator.generateUuid}.ts`,
+                        `type __T = ${propType.getText()}`,
+                        { overwrite: true },
+                      );
+                    const tempTypeNode = tempSource
+                      .getTypeAliasOrThrow('__T')
+                      .getTypeNodeOrThrow();
+                    const propMetadata = yield* Effect.suspend(() =>
+                      generateMetadata({
+                        typeNode: tempTypeNode,
+                        optional: isOptional,
+                        inlineDefault: Option.none<string>(),
+                      }),
+                    );
+
+                    metadata[propName] = propMetadata;
+                    node.getProject().removeSourceFile(tempSource);
+                  }
+
+                  return {
+                    kind: 'TYPE_LITERAL' as const,
+                    metadata,
+                    inlineDefault,
+                    optional,
+                  };
+                }
+
                 return yield* new UnsupportedSyntaxKindError({
                   kind,
                   raw: typeNode.getText(),

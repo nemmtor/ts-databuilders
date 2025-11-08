@@ -1157,6 +1157,45 @@ describe('Parser', () => {
         }),
     );
 
+    it.effect(
+      'should correctly generate TYPE_LITERAL metadata from intersection',
+      () =>
+        Effect.gen(function* () {
+          const configuration = yield* Configuration;
+          fsReadFileStringMock.mockReturnValueOnce(
+            Effect.succeed(`
+          /** @${configuration.jsdocTag} */
+          export type Foo = {
+            baz: { bar: string; } & { foo: string; };
+          }`),
+          );
+          const parser = yield* Parser;
+
+          const results = yield* parser.generateBuildersMetadata('test.ts');
+          const [shapeMetadata] = getBuildersShapeMetadata(results);
+
+          expect(shapeMetadata).toEqual({
+            baz: {
+              kind: 'TYPE_LITERAL',
+              optional: false,
+              inlineDefault: Option.none<string>(),
+              metadata: {
+                bar: {
+                  kind: 'STRING',
+                  inlineDefault: Option.none<string>(),
+                  optional: false,
+                },
+                foo: {
+                  kind: 'STRING',
+                  inlineDefault: Option.none<string>(),
+                  optional: false,
+                },
+              },
+            },
+          });
+        }),
+    );
+
     it.effect('should correctly generate TYPE_CAST metadata', () =>
       Effect.gen(function* () {
         const configuration = yield* Configuration;
