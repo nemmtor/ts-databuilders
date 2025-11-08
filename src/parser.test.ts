@@ -1107,35 +1107,55 @@ describe('Parser', () => {
       }),
     );
 
-    // it.effect(
-    //   'should correctly generate TYPE_LITERAL metadata instead of BUILDER when nested builders are turned off',
-    //   () =>
-    //     Effect.gen(function* () {
-    //       const configuration = yield* Configuration;
-    //       fsReadFileStringMock.mockReturnValueOnce(
-    //         Effect.succeed(`
-    //       /** @${configuration.jsdocTag} */
-    //       export type Bar = { name: string; };
-    //       /** @${configuration.jsdocTag} */
-    //       export type Foo = { bar: Bar; };`),
-    //       );
-    //       const parser = yield* Parser;
-    //
-    //       const results = (yield* parser.generateBuildersMetadata(
-    //         'test.ts',
-    //       )).filter((v) => v.name === 'Foo');
-    //       const [shapeMetadata] = getBuildersShapeMetadata(results);
-    //
-    //       expect(shapeMetadata).toEqual({
-    //         bar: {
-    //           kind: 'TYPE_LITERAL',
-    //           inlineDefault: Option.none<string>(),
-    //           name: 'Bar',
-    //           optional: false,
-    //         },
-    //       });
-    //     }),
-    // );
+    it.effect(
+      'should correctly generate TYPE_LITERAL metadata instead of BUILDER when nested builders are turned off',
+      () =>
+        Effect.gen(function* () {
+          const configuration = Configuration.of({
+            ...(yield* Configuration),
+            withNestedBuilders: false,
+          });
+          const typeNodeParserLayer = TypeNodeParser.Default.pipe(
+            Layer.provide(Layer.succeed(Configuration, configuration)),
+          );
+          const parserLayer = Parser.DefaultWithoutDependencies.pipe(
+            Layer.provide(
+              FileSystem.layerNoop({
+                readFileString: fsReadFileStringMock,
+              }),
+            ),
+            Layer.provide(typeNodeParserLayer),
+          );
+          fsReadFileStringMock.mockReturnValueOnce(
+            Effect.succeed(`
+          /** @${configuration.jsdocTag} */
+          export type Bar = { name: string; };
+          /** @${configuration.jsdocTag} */
+          export type Foo = { bar: Bar; };`),
+          );
+          const parser = yield* Parser.pipe(Effect.provide(parserLayer));
+
+          const results = (yield* parser.generateBuildersMetadata(
+            'test.ts',
+          )).filter((v) => v.name === 'Foo');
+          const [shapeMetadata] = getBuildersShapeMetadata(results);
+
+          expect(shapeMetadata).toEqual({
+            bar: {
+              kind: 'TYPE_LITERAL',
+              inlineDefault: Option.none<string>(),
+              optional: false,
+              metadata: {
+                name: {
+                  kind: 'STRING',
+                  inlineDefault: Option.none<string>(),
+                  optional: false,
+                },
+              },
+            },
+          });
+        }),
+    );
 
     it.effect('should correctly generate TYPE_CAST metadata', () =>
       Effect.gen(function* () {
