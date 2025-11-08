@@ -18,6 +18,7 @@ const ConfigurationSchema = Schema.Struct({
   outputDir: Schema.NonEmptyTrimmedString,
   include: Schema.NonEmptyTrimmedString,
   fileSuffix: Schema.NonEmptyTrimmedString,
+  fileCase: Schema.Literal('kebab', 'camel', 'pascal'),
   builderSuffix: Schema.NonEmptyTrimmedString,
   defaults: Schema.Struct({
     string: Schema.String,
@@ -33,6 +34,7 @@ export const DEFAULT_CONFIGURATION = ConfigurationSchema.make({
   outputDir: 'generated/builders',
   include: 'src/**/*.ts{,x}',
   fileSuffix: '.builder',
+  fileCase: 'kebab',
   builderSuffix: 'Builder',
   defaults: {
     string: '',
@@ -65,6 +67,9 @@ export const ConfigurationFileSchema = Schema.Struct({
   ),
   fileSuffix: Schema.String.pipe(
     Schema.annotations({ description: CONSTANTS.DESCRIPTIONS.fileSuffix }),
+  ),
+  fileCase: Schema.Literal('kebab', 'camel', 'pascal').pipe(
+    Schema.annotations({ description: CONSTANTS.DESCRIPTIONS.fileCase }),
   ),
   builderSuffix: Schema.String.pipe(
     Schema.annotations({ description: CONSTANTS.DESCRIPTIONS.builderSuffix }),
@@ -101,6 +106,7 @@ export const CliConfigurationSchema = Schema.Struct({
   outputDir: Schema.NonEmptyTrimmedString,
   include: Schema.NonEmptyTrimmedString,
   fileSuffix: Schema.NonEmptyTrimmedString,
+  fileCase: Schema.Literal('kebab', 'camel', 'pascal'),
   builderSuffix: Schema.NonEmptyTrimmedString,
   defaultString: Schema.String,
   defaultNumber: Schema.NumberFromString,
@@ -157,6 +163,7 @@ const resolveConfig = (opts: {
       include: yield* resolve('include'),
       withNestedBuilders: yield* resolve('withNestedBuilders'),
       fileSuffix: yield* resolve('fileSuffix'),
+      fileCase: yield* resolve('fileCase'),
       jsdocTag: yield* resolve('jsdocTag'),
       inlineDefaultJsdocTag: yield* resolve('inlineDefaultJsdocTag'),
       outputDir: yield* resolve('outputDir'),

@@ -47,6 +47,12 @@ const include = Options.text('include').pipe(
   Options.optional,
 );
 
+const fileCase = Options.text('file-case').pipe(
+  Options.withDescription(CONSTANTS.DESCRIPTIONS.fileCase),
+  Options.withSchema(Configuration.CliConfigurationSchema.fields.fileCase),
+  Options.optional,
+);
+
 const fileSuffix = Options.text('file-suffix').pipe(
   Options.withDescription(CONSTANTS.DESCRIPTIONS.fileSuffix),
   Options.withSchema(Configuration.CliConfigurationSchema.fields.fileSuffix),
@@ -85,6 +91,7 @@ export const options = {
   withNestedBuilders,
   include,
   fileSuffix,
+  fileCase,
   builderSuffix,
   defaultString,
   defaultNumber,

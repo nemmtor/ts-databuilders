@@ -24,7 +24,19 @@ class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
       const configuration = yield* Configuration.Configuration;
       const idGenerator = yield* IdGenerator.IdGenerator;
 
-      const { fileSuffix, builderSuffix, defaults } = configuration;
+      const { fileSuffix, builderSuffix, defaults, fileCase } = configuration;
+
+      const typeNameToFileName = Effect.fnUntraced(function* (
+        typeName: string,
+      ) {
+        const decoderByCase = {
+          kebab: CaseSchemas.KebabCaseFromString.pipe(Schema.decode),
+          pascal: CaseSchemas.PascalCaseFromString.pipe(Schema.decode),
+          camel: CaseSchemas.CamelCaseFromString.pipe(Schema.decode),
+        };
+        return yield* decoderByCase[fileCase](typeName);
+      });
+
       const getDefaultValueLiteral = (
         typeNodeMetadata: TypeNodeParser.TypeNodeMetadata,
       ): string | number | boolean =>
@@ -95,7 +107,10 @@ class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
             yield* process.cwd,
             configuration.outputDir,
           );
-          const baseBuilderPath = path.resolve(outputDir, 'data-builder.ts');
+          const baseBuilderPath = path.resolve(
+            outputDir,
+            `${yield* typeNameToFileName('dataBuilder')}.ts`,
+          );
           yield* Effect.logDebug(
             `[Builders]: Creating base builder at ${baseBuilderPath}`,
           );
@@ -119,7 +134,7 @@ class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
 
           const builderFilePath = path.resolve(
             outputDir,
-            `${yield* CaseSchemas.KebabCaseFromString.pipe(Schema.decode)(typeName)}${fileSuffix}.ts`,
+            `${yield* typeNameToFileName(typeName)}${fileSuffix}.ts`,
           );
           yield* Effect.logDebug(
             `[Builders]: Creating builder content for ${typeName}`,
