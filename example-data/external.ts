@@ -56,3 +56,7 @@ export type ExternalDiscUnionExcluded = Extract<
   ExternalsDiscUnion,
   { id: '1' }
 >;
+
+export type ExternalIntersMem1 = { bar: string };
+export type ExternalIntersMem2 = { baz: string };
+export type ExternalInters = ExternalIntersMem1 & ExternalIntersMem2;
