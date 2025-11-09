@@ -147,6 +147,13 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                 optional,
               }),
             ),
+            Match.when(Match.is(SyntaxKind.BigIntKeyword), () =>
+              Effect.succeed({
+                kind: 'BIGINT' as const,
+                inlineDefault,
+                optional,
+              }),
+            ),
             Match.when(Match.is(SyntaxKind.ArrayType), () =>
               Effect.succeed({
                 kind: 'ARRAY' as const,
@@ -550,6 +557,7 @@ export type TypeNodeMetadata =
         | 'DATE'
         | 'UNDEFINED'
         | 'NULL'
+        | 'BIGINT'
         | 'ARRAY';
       inlineDefault: Option.Option<string>;
     }

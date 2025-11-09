@@ -121,6 +121,7 @@ export type Bar = {
   inlineRef: Inters;
   externalInlineRefIntersection: ExternalIntersMem1 & ExternalIntersMem2;
   externalInlineRef: ExternalInters;
+  big: bigint;
 };
 
 type Foo = {
