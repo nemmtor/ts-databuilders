@@ -4,5 +4,7 @@
   "initialVersions": {
     "@nemmtor/ts-databuilders": "0.0.1-alpha.12"
   },
-  "changesets": []
+  "changesets": [
+    "yellow-cows-play"
+  ]
 }
