@@ -2,6 +2,7 @@ import * as Command from '@effect/cli/Command';
 import * as Options from '@effect/cli/Options';
 import * as Layer from 'effect/Layer';
 
+import PackageJson from '../package.json';
 import * as BuildersGenerator from './builders-generator';
 import * as Configuration from './configuration';
 import * as CONSTANTS from './constants';
@@ -123,6 +124,6 @@ export const cli = databuilderCommand.pipe(
   ),
   Command.run({
     name: 'Typescript Databuilders generator',
-    version: 'v0.0.1',
+    version: PackageJson.version,
   }),
 );
