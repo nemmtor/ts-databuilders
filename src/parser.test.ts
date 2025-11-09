@@ -108,6 +108,7 @@ describe('Parser', () => {
       { kind: 'BOOLEAN', typeValue: 'boolean' },
       { kind: 'UNDEFINED', typeValue: 'undefined' },
       { kind: 'NULL', typeValue: 'null' },
+      { kind: 'BIGINT', typeValue: 'bigint' },
       { kind: 'DATE', typeValue: 'Date' },
     ])('should correctly generate $kind metadata', ({ kind, typeValue }) =>
       Effect.gen(function* () {
@@ -175,6 +176,7 @@ describe('Parser', () => {
       { kind: 'BOOLEAN', typeValue: 'boolean' },
       { kind: 'UNDEFINED', typeValue: 'undefined' },
       { kind: 'NULL', typeValue: 'null' },
+      { kind: 'BIGINT', typeValue: 'bigint' },
       { kind: 'DATE', typeValue: 'Date' },
     ])(
       'should correctly generate optional $kind metadata',
