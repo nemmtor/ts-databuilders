@@ -2,7 +2,6 @@ import * as Command from '@effect/cli/Command';
 import * as Options from '@effect/cli/Options';
 import * as Layer from 'effect/Layer';
 
-import PackageJson from '../package.json';
 import * as BuildersGenerator from './builders-generator';
 import * as Configuration from './configuration';
 import * as CONSTANTS from './constants';
@@ -10,6 +9,7 @@ import { createJsonConfig } from './create-json-config';
 import * as Finder from './finder';
 import * as Parser from './parser';
 import { program } from './program';
+import * as Version from './version';
 
 // TODO: options for: type union priorities
 const jsdocTag = Options.text('jsdoc-tag').pipe(
@@ -124,6 +124,6 @@ export const cli = databuilderCommand.pipe(
   ),
   Command.run({
     name: 'Typescript Databuilders generator',
-    version: PackageJson.version,
+    version: Version.version,
   }),
 );

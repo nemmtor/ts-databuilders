@@ -1,5 +1,5 @@
-name: 'Setup Node.js and PNPM'
 description: 'Setup Node.js, PNPM and install dependencies'
+name: 'Setup Node.js and PNPM'
 
 runs:
   using: 'composite'
