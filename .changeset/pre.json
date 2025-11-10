@@ -6,6 +6,7 @@
   },
   "changesets": [
     "dependencies-GH-66",
+    "odd-bushes-ring",
     "short-worms-knock",
     "yellow-cows-play"
   ]

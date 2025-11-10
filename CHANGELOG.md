@@ -1,5 +1,11 @@
 # @nemmtor/ts-databuilders
 
+## 0.0.1-alpha.16
+
+### Patch Changes
+
+- [#74](https://github.com/nemmtor/ts-databuilders/pull/74) [`a0c89e5`](https://github.com/nemmtor/ts-databuilders/commit/a0c89e5b46fa83cd26667db36ff5f2614a6c954d) Thanks [@nemmtor](https://github.com/nemmtor)! - add symbol support
+
 ## 0.0.1-alpha.15
 
 ### Patch Changes
