@@ -12,6 +12,6 @@ jobs:
 
     steps:
       - name: Update PR
-        uses: mscharley/dependency-changesets-action@v1.0.5
+        uses: mscharley/dependency-changesets-action@v1.2.1
         with:
           use-conventional-commits: true
