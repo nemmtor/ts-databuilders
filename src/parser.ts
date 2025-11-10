@@ -154,6 +154,13 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                 optional,
               }),
             ),
+            Match.when(Match.is(SyntaxKind.SymbolKeyword), () =>
+              Effect.succeed({
+                kind: 'SYMBOL' as const,
+                inlineDefault,
+                optional,
+              }),
+            ),
             Match.when(Match.is(SyntaxKind.ArrayType), () =>
               Effect.succeed({
                 kind: 'ARRAY' as const,
@@ -558,6 +565,7 @@ export type TypeNodeMetadata =
         | 'UNDEFINED'
         | 'NULL'
         | 'BIGINT'
+        | 'SYMBOL'
         | 'ARRAY';
       inlineDefault: Option.Option<string>;
     }
