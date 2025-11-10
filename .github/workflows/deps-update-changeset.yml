@@ -1,4 +1,4 @@
-name: Generate changeset to dependencies updates
+name: Auto update dependencies PR
 
 on:
   pull_request_target:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   changeset-pr:
-    name: Add changeset to dependencies PR
+    name: Add changeset
     runs-on: ubuntu-latest
     if: contains(github.event.pull_request.labels.*.name, 'auto-update-dependencies')
 
@@ -15,4 +15,4 @@ jobs:
         uses: mscharley/dependency-changesets-action@v1.2.1
         with:
           use-conventional-commits: true
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.tsdatabuilders-deps-bump-chsets-action }}
