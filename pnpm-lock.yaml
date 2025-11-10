@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@effect/cli':
-        specifier: ^0.72.0
-        version: 0.72.1(@effect/platform@0.93.0(effect@3.19.3))(@effect/printer-ansi@0.46.0(@effect/typeclass@0.37.0(effect@3.19.3))(effect@3.19.3))(@effect/printer@0.46.0(@effect/typeclass@0.37.0(effect@3.19.3))(effect@3.19.3))(effect@3.19.3)
+        specifier: ^0.71.0
+        version: 0.71.0(@effect/platform@0.93.0(effect@3.19.3))(@effect/printer-ansi@0.46.0(@effect/typeclass@0.37.0(effect@3.19.3))(effect@3.19.3))(@effect/printer@0.46.0(@effect/typeclass@0.37.0(effect@3.19.3))(effect@3.19.3))(effect@3.19.3)
       '@effect/platform':
         specifier: ^0.93.0
         version: 0.93.0(effect@3.19.3)
@@ -214,13 +214,13 @@ packages:
   '@changesets/write@0.4.0':
     resolution: {integrity: sha512-CdTLvIOPiCNuH71pyDu3rA+Q0n65cmAbXnwWH84rKGiFumFzkmHNT8KHTMEchcxN+Kl8I54xGUhJ7l3E7X396Q==}
 
-  '@effect/cli@0.72.1':
-    resolution: {integrity: sha512-HGDMGD23TxFW9tCSX6g+M2u0robikMA0mP0SqeJMj7FWXTdcQ+cQsJE99bxi9iu+5YID7MIrVJMs8TUwXUV2sg==}
+  '@effect/cli@0.71.0':
+    resolution: {integrity: sha512-ZmJpUVyhMpIUsiurf4UmEWTURPhGHtZrLRXkMOqggkhIeVR1kSxn8EM+ZMXLlT/23gxbHN4ymj7BmBjxP1oodA==}
     peerDependencies:
-      '@effect/platform': ^0.93.0
-      '@effect/printer': ^0.47.0
-      '@effect/printer-ansi': ^0.47.0
-      effect: ^3.19.3
+      '@effect/platform': ^0.92.0
+      '@effect/printer': ^0.46.0
+      '@effect/printer-ansi': ^0.46.0
+      effect: ^3.18.0
 
   '@effect/cluster@0.50.6':
     resolution: {integrity: sha512-JZTctj1SjMWZuG8RnkJCd1myAXmpDYEbLPURookJ6jXhpg8ZU29us49YtQa+MCUNmIr80qjeok/I1KVaQmJfrQ==}
@@ -2434,7 +2434,7 @@ snapshots:
       human-id: 4.1.2
       prettier: 2.8.8
 
-  '@effect/cli@0.72.1(@effect/platform@0.93.0(effect@3.19.3))(@effect/printer-ansi@0.46.0(@effect/typeclass@0.37.0(effect@3.19.3))(effect@3.19.3))(@effect/printer@0.46.0(@effect/typeclass@0.37.0(effect@3.19.3))(effect@3.19.3))(effect@3.19.3)':
+  '@effect/cli@0.71.0(@effect/platform@0.93.0(effect@3.19.3))(@effect/printer-ansi@0.46.0(@effect/typeclass@0.37.0(effect@3.19.3))(effect@3.19.3))(@effect/printer@0.46.0(@effect/typeclass@0.37.0(effect@3.19.3))(effect@3.19.3))(effect@3.19.3)':
     dependencies:
       '@effect/platform': 0.93.0(effect@3.19.3)
       '@effect/printer': 0.46.0(@effect/typeclass@0.37.0(effect@3.19.3))(effect@3.19.3)
