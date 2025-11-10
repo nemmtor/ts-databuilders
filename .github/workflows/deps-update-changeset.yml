@@ -15,4 +15,4 @@ jobs:
         uses: mscharley/dependency-changesets-action@v1.2.1
         with:
           use-conventional-commits: true
-          token: ${{ secrets.tsdatabuilders-deps-bump-chsets-action }}
+          token: ${{ secrets.DEPS_BUMP_ADD_CHANGESET_ACTION_PAT }}
