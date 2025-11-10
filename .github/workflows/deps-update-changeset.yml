@@ -15,3 +15,4 @@ jobs:
         uses: mscharley/dependency-changesets-action@v1.2.1
         with:
           use-conventional-commits: true
+          token: ${{ secrets.GITHUB_TOKEN }}
