@@ -11,7 +11,6 @@ import * as Parser from './parser';
 import { program } from './program';
 import * as Version from './version';
 
-// TODO: options for: type union priorities
 const jsdocTag = Options.text('jsdoc-tag').pipe(
   Options.withDescription(CONSTANTS.DESCRIPTIONS.jsdocTag),
   Options.withSchema(Configuration.CliConfigurationSchema.fields.jsdocTag),
