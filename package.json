@@ -41,15 +41,19 @@
     "check-types": "tsc -b tsconfig.json",
     "check-knip": "knip",
     "check-dep": "depcruise --output-type err-long src",
+    "check-commits": "commitlint",
     "generate:schema": "tsx scripts/generate-schema.ts",
     "generate:version": "node scripts/generate-version.mjs",
     "package:version": "changeset version && pnpm generate:version && git add --all",
-    "package:release": "pnpm build && changeset publish"
+    "package:release": "pnpm build && changeset publish",
+    "postinstall": "pnpm lefthook install"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.2",
-    "@changesets/cli": "^2.29.7",
     "@changesets/changelog-github": "^0.5.1",
+    "@changesets/cli": "^2.29.7",
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
     "@effect/language-service": "^0.55.0",
     "@effect/vitest": "^0.27.0",
     "@total-typescript/ts-reset": "^0.6.1",

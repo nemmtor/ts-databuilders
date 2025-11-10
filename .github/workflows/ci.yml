@@ -64,3 +64,17 @@ jobs:
       - name: Run audit
         run: pnpm audit
 
+  check-commits:
+    name: Commits naming
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+            fetch-depth: 0
+
+      - name: Setup project
+        uses: ./.github/actions/setup
+
+      - name: Check PR commits
+        run: pnpm check-commits --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
