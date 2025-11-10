@@ -5,6 +5,7 @@
     "@nemmtor/ts-databuilders": "0.0.1-alpha.12"
   },
   "changesets": [
+    "dependencies-GH-66",
     "short-worms-knock",
     "yellow-cows-play"
   ]
