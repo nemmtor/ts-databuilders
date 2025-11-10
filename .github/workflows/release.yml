@@ -30,8 +30,8 @@ jobs:
         with:
           publish: pnpm package:release
           version: pnpm package:version
-          commit: "release: new version"
-          title: "release: new version"
+          commit: "chore: release"
+          title: "chore: release"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
