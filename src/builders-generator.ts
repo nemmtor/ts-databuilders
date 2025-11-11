@@ -39,16 +39,17 @@ class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
 
       const getDefaultValueLiteral = (
         typeNodeMetadata: TypeNodeParser.TypeNodeMetadata,
-      ): string | number | boolean =>
+      ): string | number | boolean | undefined | null =>
         Option.getOrUndefined(typeNodeMetadata.inlineDefault) ??
         Match.value(typeNodeMetadata).pipe(
           Match.when({ kind: 'STRING' }, () => `"${defaults.string}"`),
           Match.when({ kind: 'NUMBER' }, () => defaults.number),
           Match.when({ kind: 'BOOLEAN' }, () => defaults.boolean),
-          Match.when({ kind: 'UNDEFINED' }, () => 'undefined'),
+          Match.when({ kind: 'UNDEFINED' }, () => undefined),
           Match.when({ kind: 'BIGINT' }, () => 'BigInt(0)'),
           Match.when({ kind: 'SYMBOL' }, () => "Symbol('')"),
-          Match.when({ kind: 'NULL' }, () => 'null'),
+          Match.when({ kind: 'ANY' }, () => undefined),
+          Match.when({ kind: 'NULL' }, () => null),
           Match.when({ kind: 'DATE' }, () => 'new Date()'),
           Match.when({ kind: 'ARRAY' }, () => '[]'),
           Match.when({ kind: 'LITERAL' }, (v) => v.literalValue),

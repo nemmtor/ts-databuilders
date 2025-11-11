@@ -458,7 +458,7 @@ Some TypeScript features are not yet supported and will cause generation errors:
   };
 ```
 
-- typeof, keyof, any, unknown
+- typeof, keyof, unknown
 
 ### Alpha Stage
 ⚠️ **This library is in active development**
