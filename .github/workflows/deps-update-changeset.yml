@@ -15,4 +15,6 @@ jobs:
         uses: mscharley/dependency-changesets-action@v1.2.1
         with:
           use-conventional-commits: true
+          author-name: "Changesets GH Action"
+          author-email: "github-actions[bot]@users.noreply.github.com"
           token: ${{ secrets.DEPS_BUMP_ADD_CHANGESET_ACTION_PAT }}
