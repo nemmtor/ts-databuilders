@@ -123,6 +123,7 @@ export type Bar = {
   externalInlineRef: ExternalInters;
   big: bigint;
   sym: symbol;
+  anyy: any;
 };
 
 type Foo = {

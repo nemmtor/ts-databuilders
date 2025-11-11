@@ -32,7 +32,11 @@
     },
     "fileCase": {
       "type": "string",
-      "enum": ["kebab", "camel", "pascal"],
+      "enum": [
+        "kebab",
+        "camel",
+        "pascal"
+      ],
       "description": "Naming convention for generated builder file"
     },
     "builderSuffix": {

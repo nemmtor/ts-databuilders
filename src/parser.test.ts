@@ -110,6 +110,7 @@ describe('Parser', () => {
       { kind: 'NULL', typeValue: 'null' },
       { kind: 'BIGINT', typeValue: 'bigint' },
       { kind: 'SYMBOL', typeValue: 'symbol' },
+      { kind: 'ANY', typeValue: 'any' },
       { kind: 'DATE', typeValue: 'Date' },
     ])('should correctly generate $kind metadata', ({ kind, typeValue }) =>
       Effect.gen(function* () {
@@ -179,6 +180,7 @@ describe('Parser', () => {
       { kind: 'NULL', typeValue: 'null' },
       { kind: 'BIGINT', typeValue: 'bigint' },
       { kind: 'SYMBOL', typeValue: 'symbol' },
+      { kind: 'ANY', typeValue: 'any' },
       { kind: 'DATE', typeValue: 'Date' },
     ])(
       'should correctly generate optional $kind metadata',
