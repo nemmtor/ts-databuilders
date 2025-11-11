@@ -5,5 +5,8 @@
   ],
   "labels": [
     "auto-update-dependencies"
+  ],
+  "gitIgnoredAuthors": [
+    "github-actions[bot]@users.noreply.github.com"
   ]
 }
