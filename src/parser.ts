@@ -47,22 +47,12 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
         return Option.none<string>();
       });
 
-      const resolveObjectTypeToMetadata = Effect.fnUntraced(function* (opts: {
+      const processTypeProperties = Effect.fnUntraced(function* (opts: {
         type: Type;
         contextNode: TypeNode;
-        optional: boolean;
-        inlineDefault: Option.Option<string>;
       }) {
-        const { type, contextNode, optional, inlineDefault } = opts;
+        const { type, contextNode } = opts;
         const props = type.getProperties();
-
-        if (!type.isObject() || props.length === 0) {
-          return yield* new CannotBuildTypeReferenceMetadataError({
-            raw: type.getText(),
-            kind: contextNode.getKind(),
-          });
-        }
-
         const metadata: Record<string, TypeNodeMetadata> = {};
 
         for (const prop of props) {
@@ -84,7 +74,6 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
             generateMetadata({
               typeNode: tempTypeNode,
               optional: isOptional,
-              // TODO: double check if it should resolve inlineDefault
               inlineDefault: Option.none<string>(),
             }),
           );
@@ -92,6 +81,26 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
           metadata[propName] = propMetadata;
           contextNode.getProject().removeSourceFile(tempSource);
         }
+
+        return metadata;
+      });
+
+      const resolveObjectTypeToMetadata = Effect.fnUntraced(function* (opts: {
+        type: Type;
+        contextNode: TypeNode;
+        optional: boolean;
+        inlineDefault: Option.Option<string>;
+      }) {
+        const { type, contextNode, optional, inlineDefault } = opts;
+
+        if (!type.isObject() || type.getProperties().length === 0) {
+          return yield* new CannotBuildTypeReferenceMetadataError({
+            raw: type.getText(),
+            kind: contextNode.getKind(),
+          });
+        }
+
+        const metadata = yield* processTypeProperties({ type, contextNode });
 
         return {
           kind: 'TYPE_LITERAL' as const,
@@ -502,47 +511,24 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
 
                 const type = node.getType();
                 const props = type.getProperties();
-                if (props.length > 0) {
-                  const metadata: Record<string, TypeNodeMetadata> = {};
-                  for (const prop of props) {
-                    const propName = prop.getName();
-                    const propType = prop.getTypeAtLocation(node);
-                    const isOptional = prop.isOptional();
-
-                    const tempSource = node
-                      .getProject()
-                      .createSourceFile(
-                        `__temp_${yield* idGenerator.generateUuid}.ts`,
-                        `type __T = ${propType.getText()}`,
-                        { overwrite: true },
-                      );
-                    const tempTypeNode = tempSource
-                      .getTypeAliasOrThrow('__T')
-                      .getTypeNodeOrThrow();
-                    const propMetadata = yield* Effect.suspend(() =>
-                      generateMetadata({
-                        typeNode: tempTypeNode,
-                        optional: isOptional,
-                        inlineDefault: Option.none<string>(),
-                      }),
-                    );
-
-                    metadata[propName] = propMetadata;
-                    node.getProject().removeSourceFile(tempSource);
-                  }
-
-                  return {
-                    kind: 'TYPE_LITERAL' as const,
-                    metadata,
-                    inlineDefault,
-                    optional,
-                  };
+                if (props.length === 0) {
+                  return yield* new UnsupportedSyntaxKindError({
+                    kind,
+                    raw: typeNode.getText(),
+                  });
                 }
 
-                return yield* new UnsupportedSyntaxKindError({
-                  kind,
-                  raw: typeNode.getText(),
+                const metadata = yield* processTypeProperties({
+                  type,
+                  contextNode: node,
                 });
+
+                return {
+                  kind: 'TYPE_LITERAL' as const,
+                  metadata,
+                  inlineDefault,
+                  optional,
+                };
               }),
             ),
 
