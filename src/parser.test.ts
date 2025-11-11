@@ -1376,6 +1376,24 @@ describe('Parser', () => {
         expect(Exit.isFailure(exit) && Cause.isDie(exit.cause)).toBe(true);
       }),
     );
+
+    it.effect('should die when builder has field with never type', () =>
+      Effect.gen(function* () {
+        const configuration = yield* Configuration;
+        fsReadFileStringMock.mockReturnValueOnce(
+          Effect.succeed(`
+          /** @${configuration.jsdocTag} */
+          export type Foo = { name: never }`),
+        );
+        const parser = yield* Parser;
+
+        const exit = yield* parser
+          .generateBuildersMetadata('test.ts')
+          .pipe(Effect.exit);
+
+        expect(Exit.isFailure(exit) && Cause.isDie(exit.cause)).toBe(true);
+      }),
+    );
   });
 });
 
