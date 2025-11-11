@@ -168,6 +168,13 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
                 optional,
               }),
             ),
+            Match.when(Match.is(SyntaxKind.UnknownKeyword), () =>
+              Effect.succeed({
+                kind: 'UNKNOWN' as const,
+                inlineDefault,
+                optional,
+              }),
+            ),
             Match.when(Match.is(SyntaxKind.ArrayType), () =>
               Effect.succeed({
                 kind: 'ARRAY' as const,
@@ -573,6 +580,7 @@ export type TypeNodeMetadata =
         | 'NULL'
         | 'BIGINT'
         | 'ANY'
+        | 'UNKNOWN'
         | 'SYMBOL'
         | 'ARRAY';
       inlineDefault: Option.Option<string>;
