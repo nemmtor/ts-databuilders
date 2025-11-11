@@ -49,6 +49,7 @@ class BuilderGenerator extends Effect.Service<BuilderGenerator>()(
           Match.when({ kind: 'BIGINT' }, () => 'BigInt(0)'),
           Match.when({ kind: 'SYMBOL' }, () => "Symbol('')"),
           Match.when({ kind: 'ANY' }, () => undefined),
+          Match.when({ kind: 'UNKNOWN' }, () => undefined),
           Match.when({ kind: 'NULL' }, () => null),
           Match.when({ kind: 'DATE' }, () => 'new Date()'),
           Match.when({ kind: 'ARRAY' }, () => '[]'),

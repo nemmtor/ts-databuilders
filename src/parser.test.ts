@@ -111,6 +111,7 @@ describe('Parser', () => {
       { kind: 'BIGINT', typeValue: 'bigint' },
       { kind: 'SYMBOL', typeValue: 'symbol' },
       { kind: 'ANY', typeValue: 'any' },
+      { kind: 'UNKNOWN', typeValue: 'unknown' },
       { kind: 'DATE', typeValue: 'Date' },
     ])('should correctly generate $kind metadata', ({ kind, typeValue }) =>
       Effect.gen(function* () {
@@ -181,6 +182,7 @@ describe('Parser', () => {
       { kind: 'BIGINT', typeValue: 'bigint' },
       { kind: 'SYMBOL', typeValue: 'symbol' },
       { kind: 'ANY', typeValue: 'any' },
+      { kind: 'UNKNOWN', typeValue: 'unknown' },
       { kind: 'DATE', typeValue: 'Date' },
     ])(
       'should correctly generate optional $kind metadata',

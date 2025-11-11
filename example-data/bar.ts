@@ -124,6 +124,7 @@ export type Bar = {
   big: bigint;
   sym: symbol;
   anyy: any;
+  unk: unknown;
 };
 
 type Foo = {
