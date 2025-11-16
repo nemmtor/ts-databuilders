@@ -65,7 +65,7 @@ importers:
         version: 4.0.9(vitest@4.0.9(@types/node@24.10.1)(jiti@2.6.1)(tsx@4.20.6)(yaml@2.8.1))
       dependency-cruiser:
         specifier: ^17.2.0
-        version: 17.2.0
+        version: 17.3.1
       knip:
         specifier: ^5.66.4
         version: 5.69.1(@types/node@24.10.1)(typescript@5.9.3)
@@ -1566,8 +1566,8 @@ packages:
   defaults@1.0.4:
     resolution: {integrity: sha512-eFuaLoy/Rxalv2kr+lqMlUnrDWV+3j4pljOIJgLIhI058IQfWJ7vXhyEIHu+HtC738klGALYxOKDO0bQP3tg8A==}
 
-  dependency-cruiser@17.2.0:
-    resolution: {integrity: sha512-EiOkB41fdAOCef3ycMX4pAXqkWrCOQ+G4IKOjcs9uPILShAuki2fHlTQPnv4aIHka/3lGJJdpRVrrwTMD7v1dg==}
+  dependency-cruiser@17.3.1:
+    resolution: {integrity: sha512-yWwszB4GKIBKK/xiHSQ6TVIV6k8byd+gMGT2RMQ+03wb1jGH48cSsLH29iUUZgGtKyLSH51NurbnjXV0+niUjA==}
     engines: {node: ^20.12||^22||>=24}
     hasBin: true
 
@@ -2706,9 +2706,9 @@ packages:
     resolution: {integrity: sha512-3hu+tD8YzSLGuFYtPRb48vdhKMi0KQV5sn+uWr8+7dMEq/2G/dtLrdDinkLjqq5TIbIBjYJ4Ax/n3YiaW7QM8A==}
     engines: {node: 20 || >=22}
 
-  watskeburt@4.2.3:
-    resolution: {integrity: sha512-uG9qtQYoHqAsnT711nG5iZc/8M5inSmkGCOp7pFaytKG2aTfIca7p//CjiVzAE4P7hzaYuCozMjNNaLgmhbK5g==}
-    engines: {node: ^18||>=20}
+  watskeburt@5.0.0:
+    resolution: {integrity: sha512-fEMhfIzu9WOuAJdDcTT+aPjn0JHI2+UeJ+zWSEs/tgMvc+MFDZVmhlZ8C1uJWXax1ETYc4trUnHFHyx2DrG0jQ==}
+    engines: {node: ^20.12||^22.13||>=24.0}
     hasBin: true
 
   wcwidth@1.0.1:
@@ -4054,7 +4054,7 @@ snapshots:
     dependencies:
       clone: 1.0.4
 
-  dependency-cruiser@17.2.0:
+  dependency-cruiser@17.3.1:
     dependencies:
       acorn: 8.15.0
       acorn-jsx: 5.3.2(acorn@8.15.0)
@@ -4075,7 +4075,7 @@ snapshots:
       safe-regex: 2.1.1
       semver: 7.7.3
       tsconfig-paths-webpack-plugin: 4.2.0
-      watskeburt: 4.2.3
+      watskeburt: 5.0.0
 
   detect-indent@6.1.0: {}
 
@@ -5190,7 +5190,7 @@ snapshots:
 
   walk-up-path@4.0.0: {}
 
-  watskeburt@4.2.3: {}
+  watskeburt@5.0.0: {}
 
   wcwidth@1.0.1:
     dependencies:
