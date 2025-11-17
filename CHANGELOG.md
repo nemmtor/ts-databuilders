@@ -1,5 +1,13 @@
 # @nemmtor/ts-databuilders
 
+## 0.0.1-alpha.17
+
+### Patch Changes
+
+- [#83](https://github.com/nemmtor/ts-databuilders/pull/83) [`8fc25db`](https://github.com/nemmtor/ts-databuilders/commit/8fc25dbfd435e1218755ffdb2de8fe1c64a9fba8) Thanks [@nemmtor](https://github.com/nemmtor)! - add support for any
+
+- [#85](https://github.com/nemmtor/ts-databuilders/pull/85) [`d4916d0`](https://github.com/nemmtor/ts-databuilders/commit/d4916d0a77c5749f68c9f72162015cd36c73d767) Thanks [@nemmtor](https://github.com/nemmtor)! - add support for unknown
+
 ## 0.0.1-alpha.16
 
 ### Patch Changes
