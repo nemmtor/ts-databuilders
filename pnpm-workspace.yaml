@@ -1,0 +1,3 @@
+auditConfig:
+  ignoreGhsas:
+    - GHSA-mh29-5h37-fv8m # waiting for fix in changesets package https://github.com/changesets/changesets/issues/1762
