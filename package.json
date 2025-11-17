@@ -60,7 +60,7 @@
     "@effect/vitest": "^0.27.0",
     "@total-typescript/ts-reset": "^0.6.1",
     "@types/node": "^24.0.0",
-    "@vitest/coverage-v8": "4.0.9",
+    "@vitest/coverage-v8": "4.0.10",
     "dependency-cruiser": "^17.2.0",
     "knip": "^5.66.4",
     "lefthook": "^2.0.2",
