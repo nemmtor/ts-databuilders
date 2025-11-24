@@ -1,0 +1,21 @@
+import { DataBuilder } from './{{baseDataBuilderFileName}}';
+import type { {{typeName}} } from '{{originalFileImportPath}}';
+
+export class {{typeName}}{{builderSuffix}} extends DataBuilder<{{typeName}}> {
+  constructor() {
+    super({{{defaultValues}}});
+  }
+{{#each properties}}
+
+  with{{{name.pascal}}}(value: {{../typeName}}['{{{name.original}}}']) {
+{{#if hasQuestionToken}}
+    if (value === undefined) {
+      const { "{{{name.original}}}": _unused, ...rest } = this.build();
+      return this.with(rest);
+    }
+
+{{/if}}
+    return this.with({ '{{{name.original}}}': value });
+  }
+{{/each}}
+}

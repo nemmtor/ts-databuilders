@@ -4,7 +4,7 @@
   "inlineDefaultJsdocTag": "DataBuilderDefault",
   "withNestedBuilders": true,
   "outputDir": "generated/builders",
-  "include": "example-data/**",
+  "include": "src/example-data/**",
   "fileSuffix": ".builder",
   "fileCase": "kebab",
   "builderSuffix": "Builder",
