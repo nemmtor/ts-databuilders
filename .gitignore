@@ -36,3 +36,7 @@ generated
 trace-dir
 
 dependencygraph.svg
+
+# stryker temp files
+.stryker-tmp
+reports
