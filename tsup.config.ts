@@ -1,4 +1,5 @@
 import { defineConfig } from 'tsup';
+import { cp } from 'node:fs/promises';
 
 export default defineConfig({
   entry: ['src/main.ts'],
@@ -18,5 +19,10 @@ export default defineConfig({
   ],
   banner: {
     js: '#!/usr/bin/env node',
+  },
+  onSuccess: async () => {
+    await cp('src/builder-generator/templates', 'dist/templates', {
+      recursive: true,
+    });
   },
 });

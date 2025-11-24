@@ -6,11 +6,11 @@
     "$schema": {
       "type": "string"
     },
-    "jsdocTag": {
+    "builderJsDocTagName": {
       "type": "string",
       "description": "JSDoc tag used to mark types for data building generation."
     },
-    "inlineDefaultJsdocTag": {
+    "inlineDefaultJsDocTagName": {
       "type": "string",
       "description": "JSDoc tag used to set default value of given field."
     },

@@ -34,8 +34,8 @@ Example of default config file:
 ```json
 {
   "$schema": "https://raw.githubusercontent.com/nemmtor/ts-databuilders/refs/heads/main/schema.json",
-  "jsdocTag": "DataBuilder",
-  "inlineDefaultJsdocTag": "DataBuilderDefault",
+  "builderJsDocTagName": "DataBuilder",
+  "inlineDefaultJsDocTagName": "DataBuilderDefault",
   "withNestedBuilders": true,
   "outputDir": "generated/builders",
   "include": "src/**/*.ts{,x}",
@@ -64,8 +64,8 @@ pnpm ts-databuilders init --wizard
 
 | Name (in config file)          | Flag (cli flags)                                                  | Description                             | Default              |
 |---------------|-------------------------------------------------------|-----------------------------------------|----------------------|
-| jsdocTag      | `--jsdoc-tag`                                         | JSDoc tag to mark types for generation  | `DataBuilder`        |
-| inlineDefaultJsdocTag      | `--inline-default-jsdoc-tag`                                         | JSDoc tag used to set default value of given field  | `DataBuilderDefault`        |
+| builderJsDocTagName      | `--builder-jsdoc-tag-name`                                         | JSDoc tag to mark types for generation  | `DataBuilder`        |
+| inlineDefaultJsDocTagName      | `--inline-default-jsdoc-tag-name`                                         | JSDoc tag used to set default value of given field  | `DataBuilderDefault`        |
 | withNestedBuilders      | `--with-nested-builders`                                         | When set to true ts-databuilders will use nested builders approach  | `true`        |
 | outputDir     | `--output-dir -o`                                     | Output directory for generated builders | `generated/builders` |
 | include       | `--include -i`                                        | Glob pattern for source files           | `src/**/*.ts{,x}`    |

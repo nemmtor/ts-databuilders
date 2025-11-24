@@ -1,0 +1,1 @@
+export { rootCommand } from './cli';

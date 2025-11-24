@@ -1,17 +1,10 @@
 import * as NodeContext from '@effect/platform-node/NodeContext';
 import * as NodeRuntime from '@effect/platform-node/NodeRuntime';
 import * as Effect from 'effect/Effect';
-import * as Layer from 'effect/Layer';
-import * as Logger from 'effect/Logger';
-import * as LogLevel from 'effect/LogLevel';
 
-import { cli } from './cli';
-import * as Process from './lib/process';
+import * as Cli from './cli';
 
-const MainLive = Layer.mergeAll(
-  Logger.minimumLogLevel(LogLevel.Info),
-  Process.Process.Default,
-  NodeContext.layer,
+Cli.rootCommand(process.argv).pipe(
+  Effect.provide(NodeContext.layer),
+  NodeRuntime.runMain,
 );
-
-cli(process.argv).pipe(Effect.provide(MainLive), NodeRuntime.runMain);

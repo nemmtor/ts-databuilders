@@ -9,8 +9,9 @@ describe('Process', () => {
   });
 
   it.layer(Process.Default)((it) => {
-    it.effect('should retrieve current working directory', () =>
-      Effect.gen(function* () {
+    it.effect(
+      'should retrieve current working directory',
+      Effect.fn(function* () {
         vi.spyOn(process, 'cwd').mockReturnValueOnce('/mock/path');
         const processService = yield* Process;
         const cwd = yield* processService.cwd;

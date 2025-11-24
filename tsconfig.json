@@ -1,7 +1,9 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
-    "lib": ["ESNext"],
+    "lib": [
+      "ESNext"
+    ],
     "target": "ESNext",
     "module": "Preserve",
     "moduleDetection": "force",
@@ -25,7 +27,7 @@
     "forceConsistentCasingInFileNames": true,
     "strictBindCallApply": true,
     "noFallthroughCasesInSwitch": true,
-    "exactOptionalPropertyTypes": false,
+    "exactOptionalPropertyTypes": true,
     "useUnknownInCatchVariables": true,
     "noImplicitThis": true,
     "plugins": [
@@ -69,5 +71,8 @@
       }
     ]
   },
-  "include": ["declarations", "src"]
+  "include": [
+    "declarations",
+    "src"
+  ]
 }
