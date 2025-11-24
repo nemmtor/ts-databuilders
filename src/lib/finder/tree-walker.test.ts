@@ -5,8 +5,8 @@ import * as Exit from 'effect/Exit';
 import * as Layer from 'effect/Layer';
 import * as Stream from 'effect/Stream';
 
+import { Process } from '../process';
 import { Glob } from './glob';
-import { Process } from './process';
 import { TreeWalker } from './tree-walker';
 
 const emptyAsyncGenerator = async function* () {};

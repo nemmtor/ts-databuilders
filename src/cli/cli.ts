@@ -2,13 +2,13 @@ import * as Command from '@effect/cli/Command';
 import * as Options from '@effect/cli/Options';
 import * as Layer from 'effect/Layer';
 
-import * as BuildersGenerator from './builders-generator';
+// import * as BuildersGenerator from '../builders-generator';
+import * as ASTParser from '../lib/ast-parser';
+import * as Finder from '../lib/finder';
 import * as Configuration from './configuration';
 import * as CONSTANTS from './constants';
-import { createJsonConfig } from './create-json-config';
-import * as Finder from './finder';
-import * as Parser from './parser';
-import { program } from './program';
+import * as CreateJSONConfig from './create-json-config';
+import * as GenerateBuilders from './generate-builders';
 import * as Version from './version';
 
 const jsdocTag = Options.text('jsdoc-tag').pipe(
@@ -85,7 +85,7 @@ const defaultBoolean = Options.text('default-boolean').pipe(
   Options.optional,
 );
 
-export const options = {
+const options = {
   jsdocTag,
   outputDir,
   withNestedBuilders,
@@ -100,20 +100,20 @@ export const options = {
 };
 
 const initCommand = Command.make('init', options).pipe(
-  Command.withHandler(createJsonConfig),
+  Command.withHandler(CreateJSONConfig.program),
 );
 
 const databuilderCommand = Command.make('ts-databuilders', options);
-export const cli = databuilderCommand.pipe(
-  Command.withHandler(() => program),
+export const rootCommand = databuilderCommand.pipe(
+  Command.withHandler(() => GenerateBuilders.program),
   Command.withSubcommands([initCommand]),
   Command.provide((providedOptions) =>
     Layer.mergeAll(
       Finder.Finder.Default,
-      Parser.Parser.Default,
-      BuildersGenerator.BuildersGenerator.Default,
+      ASTParser.ASTParser.Default,
+      // BuildersGenerator.BuildersGenerator.Default,
     ).pipe(
-      Layer.provide(
+      Layer.provideMerge(
         Layer.effect(
           Configuration.Configuration,
           Configuration.load(providedOptions),

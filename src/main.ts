@@ -5,7 +5,7 @@ import * as Layer from 'effect/Layer';
 import * as Logger from 'effect/Logger';
 import * as LogLevel from 'effect/LogLevel';
 
-import { cli } from './cli';
+import * as Cli from './cli';
 import * as Process from './lib/process';
 
 const MainLive = Layer.mergeAll(
@@ -14,4 +14,7 @@ const MainLive = Layer.mergeAll(
   NodeContext.layer,
 );
 
-cli(process.argv).pipe(Effect.provide(MainLive), NodeRuntime.runMain);
+Cli.rootCommand(process.argv).pipe(
+  Effect.provide(MainLive),
+  NodeRuntime.runMain,
+);
