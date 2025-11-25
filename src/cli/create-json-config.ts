@@ -4,11 +4,11 @@ import * as Effect from 'effect/Effect';
 import * as Option from 'effect/Option';
 import * as Schema from 'effect/Schema';
 
+import * as Process from '../lib/process';
+import * as utils from '../lib/utils';
 import * as Configuration from './configuration';
-import * as Process from './lib/process';
-import * as utils from './lib/utils';
 
-export const createJsonConfig = (opts: Configuration.CliConfigurationShape) =>
+export const program = (opts: Configuration.CliConfigurationShape) =>
   Effect.gen(function* () {
     const process = yield* Process.Process;
     const fs = yield* FileSystem.FileSystem;

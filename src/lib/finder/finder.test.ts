@@ -5,10 +5,9 @@ import * as Effect from 'effect/Effect';
 import * as Layer from 'effect/Layer';
 import * as Option from 'effect/Option';
 
-import { Configuration, DEFAULT_CONFIGURATION } from './configuration';
+import { FileContentChecker } from './file-content-checker';
 import { Finder } from './finder';
-import { FileContentChecker } from './lib/file-content-checker';
-import { TreeWalker, TreeWalkerError } from './lib/tree-walker';
+import { TreeWalker, TreeWalkerError } from './tree-walker';
 
 const treeWalkerWalkMock = vi.fn(
   (): Effect.Effect<
@@ -31,9 +30,6 @@ const TestLayer = Finder.DefaultWithoutDependencies.pipe(
       FileContentChecker.make({ check: fileContentCheckerCheckMock }),
     ),
   ),
-  Layer.provide(
-    Layer.succeed(Configuration, Configuration.of(DEFAULT_CONFIGURATION)),
-  ),
 );
 
 describe('Finder', () => {
@@ -55,7 +51,7 @@ describe('Finder', () => {
           .mockReturnValueOnce(Effect.succeed(Option.some<true>(true)));
         const finder = yield* Finder;
 
-        const foundFiles = yield* finder.find;
+        const foundFiles = yield* finder.find({ pattern: '', include: '' });
 
         expect(foundFiles).toEqual(Chunk.fromIterable(['file1', 'file3']));
       }),
@@ -76,7 +72,7 @@ describe('Finder', () => {
             .mockReturnValueOnce(Effect.succeed(Option.none<true>()));
           const finder = yield* Finder;
 
-          const foundFiles = yield* finder.find;
+          const foundFiles = yield* finder.find({ pattern: '', include: '' });
 
           expect(foundFiles).toEqual(Chunk.fromIterable([]));
         }),
@@ -89,7 +85,7 @@ describe('Finder', () => {
         );
         const finder = yield* Finder;
 
-        const foundFiles = yield* finder.find;
+        const foundFiles = yield* finder.find({ pattern: '', include: '' });
 
         expect(foundFiles).toEqual(Chunk.fromIterable([]));
       }),
@@ -102,9 +98,9 @@ describe('Finder', () => {
         );
         const finder = yield* Finder;
 
-        const result = yield* finder.find.pipe(
-          Effect.catchAllDefect((v) => Effect.succeed(v)),
-        );
+        const result = yield* finder
+          .find({ pattern: '', include: '' })
+          .pipe(Effect.catchAllDefect((v) => Effect.succeed(v)));
 
         expect(result).toBeInstanceOf(TreeWalkerError);
       }),

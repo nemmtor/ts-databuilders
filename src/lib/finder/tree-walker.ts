@@ -2,8 +2,8 @@ import * as Data from 'effect/Data';
 import * as Effect from 'effect/Effect';
 import * as Stream from 'effect/Stream';
 
+import * as Process from '../process';
 import * as Glob from './glob';
-import * as Process from './process';
 
 export class TreeWalker extends Effect.Service<TreeWalker>()(
   '@TSDataBuilders/TreeWalker',

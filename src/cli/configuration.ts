@@ -5,9 +5,9 @@ import * as Effect from 'effect/Effect';
 import * as Option from 'effect/Option';
 import * as Schema from 'effect/Schema';
 
+import * as Process from '../lib/process';
+import * as utils from '../lib/utils';
 import * as CONSTANTS from './constants';
-import * as Process from './lib/process';
-import * as utils from './lib/utils';
 
 export const CONFIG_FILE_NAME = 'ts-databuilders.json';
 
