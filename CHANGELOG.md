@@ -1,5 +1,11 @@
 # @nemmtor/ts-databuilders
 
+## 0.0.1-alpha.19
+
+### Patch Changes
+
+- [#141](https://github.com/nemmtor/ts-databuilders/pull/141) [`30176e2`](https://github.com/nemmtor/ts-databuilders/commit/30176e22f2eda04310cb5545d5678c915a448d10) Thanks [@renovate](https://github.com/apps/renovate)! - fix(deps): update dependency @effect/platform-node to ^0.102.0
+
 ## 0.0.1-alpha.18
 
 ### Patch Changes
