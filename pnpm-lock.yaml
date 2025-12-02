@@ -65,7 +65,7 @@ importers:
         version: 4.0.14(vitest@4.0.14(@types/node@24.10.1)(jiti@2.6.1)(tsx@4.20.6)(yaml@2.8.1))
       dependency-cruiser:
         specifier: ^17.2.0
-        version: 17.3.1
+        version: 17.3.2
       knip:
         specifier: ^5.66.4
         version: 5.70.2(@types/node@24.10.1)(typescript@5.9.3)
@@ -1676,8 +1676,8 @@ packages:
   defaults@1.0.4:
     resolution: {integrity: sha512-eFuaLoy/Rxalv2kr+lqMlUnrDWV+3j4pljOIJgLIhI058IQfWJ7vXhyEIHu+HtC738klGALYxOKDO0bQP3tg8A==}
 
-  dependency-cruiser@17.3.1:
-    resolution: {integrity: sha512-yWwszB4GKIBKK/xiHSQ6TVIV6k8byd+gMGT2RMQ+03wb1jGH48cSsLH29iUUZgGtKyLSH51NurbnjXV0+niUjA==}
+  dependency-cruiser@17.3.2:
+    resolution: {integrity: sha512-1xx1Q1i7WuW85W1x1cLFcl4L5bjW5bT+qBm6kwnAdIHDA87x/gU7NWKknpBWMilX2lQphxtB1VeU3GVOj3wYqw==}
     engines: {node: ^20.12||^22||>=24}
     hasBin: true
 
@@ -4233,7 +4233,7 @@ snapshots:
     dependencies:
       clone: 1.0.4
 
-  dependency-cruiser@17.3.1:
+  dependency-cruiser@17.3.2:
     dependencies:
       acorn: 8.15.0
       acorn-jsx: 5.3.2(acorn@8.15.0)
