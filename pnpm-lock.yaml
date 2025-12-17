@@ -68,7 +68,7 @@ importers:
         version: 17.3.4
       knip:
         specifier: ^5.66.4
-        version: 5.74.0(@types/node@24.10.4)(typescript@5.9.3)
+        version: 5.75.1(@types/node@24.10.4)(typescript@5.9.3)
       lefthook:
         specifier: ^2.0.2
         version: 2.0.12
@@ -1901,8 +1901,8 @@ packages:
     resolution: {integrity: sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==}
     engines: {node: '>=6'}
 
-  knip@5.74.0:
-    resolution: {integrity: sha512-xSG+vn403ONBkQtSBf1+kcE8ulzyQHLWIDQAxvu3W7HnM0jZJqVUPlK5w6FZNUyKnp+4FInsYQW77eapDpmcNA==}
+  knip@5.75.1:
+    resolution: {integrity: sha512-raguBFxTUO5JKrv8rtC8wrOtzrDwWp/fOu1F1GhrHD1F3TD2fqI1Z74JB+PyFZubL+RxqOkhGStdPAvaaXSOWQ==}
     engines: {node: '>=18.18.0'}
     hasBin: true
     peerDependencies:
@@ -2091,8 +2091,8 @@ packages:
   msgpackr@1.11.5:
     resolution: {integrity: sha512-UjkUHN0yqp9RWKy0Lplhh+wlpdt9oQBYgULZOiFhV3VclSF1JnSQWZ5r9gORQlNYaUKQoR8itv7g7z1xDDuACA==}
 
-  msgpackr@1.11.6:
-    resolution: {integrity: sha512-DzHs4d3a2AaIF4bQZNX5z7NfcoV1pHK/FIcX8Ow65s2DVYPVhJoq0S7wf6I17NkYuWRnG0mvRv4/Bii0D1PEfA==}
+  msgpackr@1.11.7:
+    resolution: {integrity: sha512-LXTGyT6FlVaL090rEEz4ZwfifKEj+tF4FOoaC6cEbHxvIDu8qc3QPXmLHKQO+XSOmvhbXZOCYPhFG4VCBZyJfQ==}
 
   multipasta@0.2.7:
     resolution: {integrity: sha512-KPA58d68KgGil15oDqXjkUBEBYc00XvbPj5/X+dyzeo/lWm9Nc25pQRlf1D+gv4OpK7NM0J1odrbu9JNNGvynA==}
@@ -3171,7 +3171,7 @@ snapshots:
     dependencies:
       '@effect/platform': 0.93.8(effect@3.19.12)
       effect: 3.19.12
-      msgpackr: 1.11.6
+      msgpackr: 1.11.7
 
   '@effect/sql@0.46.0(@effect/experimental@0.56.0(@effect/platform@0.93.8(effect@3.19.12))(effect@3.19.12))(@effect/platform@0.93.8(effect@3.19.12))(effect@3.19.12)':
     dependencies:
@@ -4422,7 +4422,7 @@ snapshots:
 
   kleur@3.0.3: {}
 
-  knip@5.74.0(@types/node@24.10.4)(typescript@5.9.3):
+  knip@5.75.1(@types/node@24.10.4)(typescript@5.9.3):
     dependencies:
       '@nodelib/fs.walk': 1.2.8
       '@types/node': 24.10.4
@@ -4595,7 +4595,7 @@ snapshots:
     optionalDependencies:
       msgpackr-extract: 3.0.3
 
-  msgpackr@1.11.6:
+  msgpackr@1.11.7:
     optionalDependencies:
       msgpackr-extract: 3.0.3
 
