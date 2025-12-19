@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@effect/cli':
-        specifier: ^0.72.0
-        version: 0.72.1(@effect/platform@0.93.8(effect@3.19.13))(@effect/printer-ansi@0.46.0(@effect/typeclass@0.37.0(effect@3.19.13))(effect@3.19.13))(@effect/printer@0.46.0(@effect/typeclass@0.37.0(effect@3.19.13))(effect@3.19.13))(effect@3.19.13)
+        specifier: ^0.73.0
+        version: 0.73.0(@effect/platform@0.93.8(effect@3.19.13))(@effect/printer-ansi@0.46.0(@effect/typeclass@0.37.0(effect@3.19.13))(effect@3.19.13))(@effect/printer@0.46.0(@effect/typeclass@0.37.0(effect@3.19.13))(effect@3.19.13))(effect@3.19.13)
       '@effect/platform':
         specifier: ^0.93.0
         version: 0.93.8(effect@3.19.13)
@@ -305,13 +305,13 @@ packages:
     resolution: {integrity: sha512-KTy0OqRDLR5y/zZMnizyx09z/rPlPC/zKhYgH8o/q6PuAjoQAKlRfY4zzv0M64yybQ//6//4H1n14pxaLZfUnA==}
     engines: {node: '>=v18'}
 
-  '@effect/cli@0.72.1':
-    resolution: {integrity: sha512-HGDMGD23TxFW9tCSX6g+M2u0robikMA0mP0SqeJMj7FWXTdcQ+cQsJE99bxi9iu+5YID7MIrVJMs8TUwXUV2sg==}
+  '@effect/cli@0.73.0':
+    resolution: {integrity: sha512-KkRtFjfyG52kQ6Z3ZEjwytfKZQACsLzn/RI2jKKxMJDebY9BQganOiE3VGCT4slU3Zisur6SP//ghM0vCLQs4g==}
     peerDependencies:
-      '@effect/platform': ^0.93.0
+      '@effect/platform': ^0.94.0
       '@effect/printer': ^0.47.0
       '@effect/printer-ansi': ^0.47.0
-      effect: ^3.19.3
+      effect: ^3.19.13
 
   '@effect/cluster@0.50.6':
     resolution: {integrity: sha512-JZTctj1SjMWZuG8RnkJCd1myAXmpDYEbLPURookJ6jXhpg8ZU29us49YtQa+MCUNmIr80qjeok/I1KVaQmJfrQ==}
@@ -3091,7 +3091,7 @@ snapshots:
       '@types/conventional-commits-parser': 5.0.2
       chalk: 5.6.2
 
-  '@effect/cli@0.72.1(@effect/platform@0.93.8(effect@3.19.13))(@effect/printer-ansi@0.46.0(@effect/typeclass@0.37.0(effect@3.19.13))(effect@3.19.13))(@effect/printer@0.46.0(@effect/typeclass@0.37.0(effect@3.19.13))(effect@3.19.13))(effect@3.19.13)':
+  '@effect/cli@0.73.0(@effect/platform@0.93.8(effect@3.19.13))(@effect/printer-ansi@0.46.0(@effect/typeclass@0.37.0(effect@3.19.13))(effect@3.19.13))(@effect/printer@0.46.0(@effect/typeclass@0.37.0(effect@3.19.13))(effect@3.19.13))(effect@3.19.13)':
     dependencies:
       '@effect/platform': 0.93.8(effect@3.19.13)
       '@effect/printer': 0.46.0(@effect/typeclass@0.37.0(effect@3.19.13))(effect@3.19.13)
