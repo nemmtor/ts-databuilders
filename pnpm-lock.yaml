@@ -68,7 +68,7 @@ importers:
         version: 17.3.5
       knip:
         specifier: ^5.66.4
-        version: 5.76.1(@types/node@24.10.4)(typescript@5.9.3)
+        version: 5.76.3(@types/node@24.10.4)(typescript@5.9.3)
       lefthook:
         specifier: ^2.0.2
         version: 2.0.12
@@ -1898,8 +1898,8 @@ packages:
     resolution: {integrity: sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==}
     engines: {node: '>=6'}
 
-  knip@5.76.1:
-    resolution: {integrity: sha512-V9CgrzE8ZhqsJeZE4VFUXZHm1cRDmL8WiRRZUPBi65rWJkExdJkEmV2ab+jiOQTzhoBIL/d3DegOPpMq5IF3DA==}
+  knip@5.76.3:
+    resolution: {integrity: sha512-YLCCzOFzkuNgyL9LdrwFBstV9gpmvPCuolRzs9W++of0mtPH1D3ehE3M4okgayksgq7tWkkMAmyjrDrXxX6aAQ==}
     engines: {node: '>=18.18.0'}
     hasBin: true
     peerDependencies:
@@ -2388,8 +2388,8 @@ packages:
     resolution: {integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==}
     engines: {node: '>=8'}
 
-  smol-toml@1.5.2:
-    resolution: {integrity: sha512-QlaZEqcAH3/RtNyet1IPIYPsEWAaYyXXv1Krsi+1L/QHppjX4Ifm8MQsBISz9vE8cHicIq3clogsheili5vhaQ==}
+  smol-toml@1.6.0:
+    resolution: {integrity: sha512-4zemZi0HvTnYwLfrpk/CF9LOd9Lt87kAt50GnqhMpyF9U3poDAP2+iukq2bZsO/ufegbYehBkqINbsWxj4l4cw==}
     engines: {node: '>= 18'}
 
   source-map-js@1.2.1:
@@ -4414,7 +4414,7 @@ snapshots:
 
   kleur@3.0.3: {}
 
-  knip@5.76.1(@types/node@24.10.4)(typescript@5.9.3):
+  knip@5.76.3(@types/node@24.10.4)(typescript@5.9.3):
     dependencies:
       '@nodelib/fs.walk': 1.2.8
       '@types/node': 24.10.4
@@ -4426,7 +4426,7 @@ snapshots:
       oxc-resolver: 11.16.0
       picocolors: 1.1.1
       picomatch: 4.0.3
-      smol-toml: 1.5.2
+      smol-toml: 1.6.0
       strip-json-comments: 5.0.3
       typescript: 5.9.3
       zod: 4.2.1
@@ -4900,7 +4900,7 @@ snapshots:
 
   slash@3.0.0: {}
 
-  smol-toml@1.5.2: {}
+  smol-toml@1.6.0: {}
 
   source-map-js@1.2.1: {}
 
