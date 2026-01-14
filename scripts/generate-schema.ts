@@ -4,7 +4,7 @@ import * as NodeRuntime from '@effect/platform-node/NodeRuntime';
 import * as Effect from 'effect/Effect';
 import * as JSONSchema from 'effect/JSONSchema';
 
-import * as Configuration from '../src/configuration';
+import * as Configuration from '../src/cli/configuration';
 
 const jsonSchema = JSON.stringify(
   JSONSchema.make(Configuration.ConfigurationFileSchema),
