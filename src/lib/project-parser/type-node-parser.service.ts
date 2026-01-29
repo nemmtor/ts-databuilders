@@ -120,11 +120,13 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
         }
 
         if (ts.isLiteralType(typeNode)) {
+          const isSynthetic =
+            typeNode.pos === -1 || typeNode.getSourceFile() === undefined;
           return {
             kind: 'LiteralType' as const,
             literal: yield* Effect.try({
               try: () =>
-                typeNode.pos === -1
+                isSynthetic
                   ? printer.printNode(
                       ts.EmitHint.Unspecified,
                       typeNode,
