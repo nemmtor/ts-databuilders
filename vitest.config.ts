@@ -4,6 +4,7 @@ export default defineConfig({
   test: {
     coverage: {
       include: ['src/**/*.{ts,tsx}'],
+      exclude: ['**/__test-utils__.ts'],
       provider: 'v8',
       reporter: ['text'],
       // thresholds: {

@@ -1,10 +1,10 @@
 {
   "$schema": "https://raw.githubusercontent.com/nemmtor/ts-databuilders/refs/heads/main/schema.json",
-  "jsdocTag": "DataBuilder",
-  "inlineDefaultJsdocTag": "DataBuilderDefault",
+  "builderJsDocTagName": "DataBuilder",
+  "inlineDefaultJsDocTagName": "DataBuilderDefault",
   "withNestedBuilders": true,
   "outputDir": "generated/builders",
-  "include": "example-data/**",
+  "include": "src/example-data/**",
   "fileSuffix": ".builder",
   "fileCase": "kebab",
   "builderSuffix": "Builder",
