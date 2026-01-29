@@ -1,6 +1,6 @@
+type Foo = 'lol' | 'kek';
+
 /** @DataBuilder */
 export interface TestObj {
-  /** @DataBuilderDefault 'Mike' */
-  firstName: string;
-  lastName: string;
+  foo: Foo;
 }
