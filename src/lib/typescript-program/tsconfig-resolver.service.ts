@@ -1,6 +1,7 @@
 import * as Path from '@effect/platform/Path';
 import * as Effect from 'effect/Effect';
 
+import * as Configuration from '../../cli/configuration';
 import * as Process from '../process';
 import * as ts from '../typescript';
 import * as TypescriptError from './typescript.errors';
@@ -12,12 +13,12 @@ export class TSConfigResolver extends Effect.Service<TSConfigResolver>()(
       const path = yield* Path.Path;
       const process = yield* Process.Process;
       const cwd = yield* process.cwd;
+      const { tsconfig } = yield* Configuration.Configuration;
 
       return {
         resolve: Effect.gen(function* () {
           const configFilePath = yield* Effect.try({
-            try: () =>
-              ts.findConfigFile(cwd, ts.sys.fileExists, 'tsconfig.json'),
+            try: () => ts.findConfigFile(cwd, ts.sys.fileExists, tsconfig),
             catch: (cause) => new TypescriptError.GetTSConfigError({ cause }),
           });
 

@@ -7,6 +7,7 @@
   "include": "src/example-data/**",
   "fileSuffix": ".builder",
   "fileCase": "kebab",
+  "tsconfig": "tsconfig.json",
   "builderSuffix": "Builder",
   "defaults": {
     "string": "",

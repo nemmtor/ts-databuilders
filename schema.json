@@ -6,6 +6,10 @@
     "$schema": {
       "type": "string"
     },
+    "tsconfig": {
+      "type": "string",
+      "description": "Path to tsconfig file. Useful in repos with multiple tsconfig files."
+    },
     "builderJsDocTagName": {
       "type": "string",
       "description": "JSDoc tag used to mark types for data building generation."
