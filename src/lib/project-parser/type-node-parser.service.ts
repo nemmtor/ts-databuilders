@@ -222,10 +222,13 @@ export class TypeNodeParser extends Effect.Service<TypeNodeParser>()(
           const type =
             typescriptProgram.typeChecker.getTypeAtLocation(typeNode);
 
+          // TODO: this is a weird workaround, find better solution
           // Check if type is object-like (interface/type alias with properties)
+          // Skip for union types - they have inherited properties (e.g., string methods)
+          // but should be resolved synthetically instead
           const properties = type.getProperties();
 
-          if (properties.length > 0) {
+          if (properties.length > 0 && !type.isUnion()) {
             // Build TypeLiteral from properties directly
             const propertySignatures = yield* Effect.all(
               properties.map(
