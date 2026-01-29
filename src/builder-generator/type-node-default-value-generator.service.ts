@@ -173,13 +173,13 @@ export class TypeNodeDefaultValueGenerator extends Effect.Service<TypeNodeDefaul
 
 // Record instead of array to make sure the list is exhaustive
 const NODE_KIND_PRIORITY_MAP: Record<ProjectParser.TypeNode['kind'], number> = {
-  UndefinedKeyword: 0,
-  BooleanKeyword: 1,
-  NumberKeyword: 2,
-  StringKeyword: 3,
-  SymbolKeyword: 4,
-  BigIntKeyword: 5,
-  LiteralType: 6,
+  LiteralType: 0,
+  UndefinedKeyword: 1,
+  BooleanKeyword: 2,
+  NumberKeyword: 3,
+  StringKeyword: 4,
+  SymbolKeyword: 5,
+  BigIntKeyword: 6,
   TypeLiteral: 7,
   ArrayType: 8,
   TupleType: 9,
