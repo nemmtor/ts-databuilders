@@ -64,6 +64,7 @@ pnpm ts-databuilders init --wizard
 
 | Name (in config file)          | Flag (cli flags)                                                  | Description                             | Default              |
 |---------------|-------------------------------------------------------|-----------------------------------------|----------------------|
+| tsconfig      | `--tsconfig -t`                                         | Path to tsconfig file | `tsconfig.json`        |
 | builderJsDocTagName      | `--builder-jsdoc-tag-name`                                         | JSDoc tag to mark types for generation  | `DataBuilder`        |
 | inlineDefaultJsDocTagName      | `--inline-default-jsdoc-tag-name`                                         | JSDoc tag used to set default value of given field  | `DataBuilderDefault`        |
 | withNestedBuilders      | `--with-nested-builders`                                         | When set to true ts-databuilders will use nested builders approach  | `true`        |
@@ -78,6 +79,20 @@ pnpm ts-databuilders init --wizard
 
 #### Debugging
 In order to turn on debug logs pass a flag: `--log-level debug`.
+
+#### TSConfig References
+If your project uses multiple tsconfig files, point ts-databuilders to the one that includes your source files in its `include` field.
+
+```bash
+pnpm ts-databuilders --tsconfig tsconfig.app.json
+```
+
+Or in config file:
+```json
+{
+  "tsconfig": "tsconfig.app.json"
+}
+```
 
 ## Quick Start
 **1. Annotate your types with JSDoc:**

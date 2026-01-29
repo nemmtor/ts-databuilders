@@ -55,9 +55,11 @@ export const program = Effect.fnUntraced(function* (
         () => Configuration.DEFAULT_CONFIGURATION.withNestedBuilders,
       ),
     ),
-
     outputDir: opts.outputDir.pipe(
       Option.getOrElse(() => Configuration.DEFAULT_CONFIGURATION.outputDir),
+    ),
+    tsconfig: opts.tsconfig.pipe(
+      Option.getOrElse(() => Configuration.DEFAULT_CONFIGURATION.tsconfig),
     ),
     defaults: {
       ...Configuration.DEFAULT_CONFIGURATION.defaults,

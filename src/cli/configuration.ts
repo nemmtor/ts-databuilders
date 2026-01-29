@@ -12,6 +12,7 @@ import * as CONSTANTS from './constants';
 export const CONFIG_FILE_NAME = 'ts-databuilders.json';
 
 const ConfigurationSchema = Schema.Struct({
+  tsconfig: Schema.NonEmptyTrimmedString,
   builderJsDocTagName: Schema.NonEmptyTrimmedString,
   inlineDefaultJsDocTagName: Schema.NonEmptyTrimmedString,
   withNestedBuilders: Schema.Boolean,
@@ -28,6 +29,7 @@ const ConfigurationSchema = Schema.Struct({
 });
 
 export const DEFAULT_CONFIGURATION = ConfigurationSchema.make({
+  tsconfig: 'tsconfig.json',
   builderJsDocTagName: 'DataBuilder',
   inlineDefaultJsDocTagName: 'DataBuilderDefault',
   withNestedBuilders: true,
@@ -46,6 +48,11 @@ type ConfigurationShape = typeof ConfigurationSchema.Type;
 
 export const ConfigurationFileSchema = Schema.Struct({
   $schema: Schema.optional(Schema.String),
+  tsconfig: Schema.String.pipe(
+    Schema.annotations({
+      description: CONSTANTS.DESCRIPTIONS.tsconfig,
+    }),
+  ),
   builderJsDocTagName: Schema.String.pipe(
     Schema.annotations({
       description: CONSTANTS.DESCRIPTIONS.builderJsDocTagName,
@@ -102,6 +109,7 @@ export class Configuration extends Context.Tag('Configuration')<
 >() {}
 
 export const CliConfigurationSchema = Schema.Struct({
+  tsconfig: Schema.NonEmptyTrimmedString,
   builderJsDocTagName: Schema.NonEmptyTrimmedString,
   inlineDefaultJsDocTagName: Schema.NonEmptyTrimmedString,
   withNestedBuilders: Schema.BooleanFromString,
@@ -163,6 +171,7 @@ const resolveConfig = Effect.fnUntraced(function* (opts: {
   };
 
   const config = {
+    tsconfig: yield* resolve('tsconfig'),
     builderSuffix: yield* resolve('builderSuffix'),
     include: yield* resolve('include'),
     withNestedBuilders: yield* resolve('withNestedBuilders'),

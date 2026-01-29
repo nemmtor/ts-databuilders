@@ -12,6 +12,13 @@ import * as CreateJSONConfig from './create-json-config';
 import * as GenerateBuilders from './generate-builders';
 import * as Version from './version';
 
+const tsconfig = Options.text('tsconfig').pipe(
+  Options.withAlias('t'),
+  Options.withDescription(CONSTANTS.DESCRIPTIONS.tsconfig),
+  Options.withSchema(Configuration.CliConfigurationSchema.fields.tsconfig),
+  Options.optional,
+);
+
 const builderJsDocTagName = Options.text('builder-jsdoc-tag-name').pipe(
   Options.withDescription(CONSTANTS.DESCRIPTIONS.builderJsDocTagName),
   Options.withSchema(
@@ -91,6 +98,7 @@ const defaultBoolean = Options.text('default-boolean').pipe(
 );
 
 const options = {
+  tsconfig,
   builderJsDocTagName,
   outputDir,
   withNestedBuilders,
@@ -109,6 +117,7 @@ const initCommand = Command.make('init', options).pipe(
 );
 
 const databuilderCommand = Command.make('ts-databuilders', options);
+
 export const rootCommand = databuilderCommand.pipe(
   Command.withHandler(() => GenerateBuilders.program),
   Command.withSubcommands([initCommand]),

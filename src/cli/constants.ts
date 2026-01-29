@@ -1,4 +1,6 @@
 export const DESCRIPTIONS = {
+  tsconfig:
+    'Path to tsconfig file. Useful in repos with multiple tsconfig files.',
   builderJsDocTagName:
     'JSDoc tag used to mark types for data building generation.',
   inlineDefaultJsDocTagName:
