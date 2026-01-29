@@ -19,7 +19,7 @@ Configuration is optional - it fallbacks to sensible defaults.
 
 ### Configure via CLI flags (optional):
 ```bash
-pnpm ts-databuilders --include "src/**/*.ts{,x}" --output-dir src/__generated__ --jsdoc-tag DataBuilder
+pnpm ts-databuilders --include "src/**/*.ts{,x}" --output-dir src/__generated__ --builder-jsdoc-tag-name DataBuilder
 ```
 You can also provide configuration by going through interactive wizard:
 ```bash
