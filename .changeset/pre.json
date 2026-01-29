@@ -5,6 +5,7 @@
     "@nemmtor/ts-databuilders": "0.0.1-alpha.12"
   },
   "changesets": [
+    "breezy-bikes-film",
     "dependencies-GH-115",
     "dependencies-GH-118",
     "dependencies-GH-141",

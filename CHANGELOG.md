@@ -1,5 +1,11 @@
 # @nemmtor/ts-databuilders
 
+## 0.0.1-alpha.22
+
+### Patch Changes
+
+- [#88](https://github.com/nemmtor/ts-databuilders/pull/88) [`b18c558`](https://github.com/nemmtor/ts-databuilders/commit/b18c5587bb1de48b61260ac92364a37677d625bd) Thanks [@nemmtor](https://github.com/nemmtor)! - refactor whole repository to use native ts ast parse
+
 ## 0.0.1-alpha.21
 
 ### Patch Changes
