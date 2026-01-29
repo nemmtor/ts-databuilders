@@ -1,5 +1,17 @@
 # @nemmtor/ts-databuilders
 
+## 0.0.1-alpha.23
+
+### Patch Changes
+
+- [#252](https://github.com/nemmtor/ts-databuilders/pull/252) [`e6a18a1`](https://github.com/nemmtor/ts-databuilders/commit/e6a18a18ca232c4beeba13e0a989cc34ad97e250) Thanks [@nemmtor](https://github.com/nemmtor)! - fix root level intersection and generic
+
+- [#248](https://github.com/nemmtor/ts-databuilders/pull/248) [`b9056f8`](https://github.com/nemmtor/ts-databuilders/commit/b9056f863021b2dc33877641ceacba727b720bf2) Thanks [@nemmtor](https://github.com/nemmtor)! - workaround reference union types issue
+
+- [#244](https://github.com/nemmtor/ts-databuilders/pull/244) [`745c32d`](https://github.com/nemmtor/ts-databuilders/commit/745c32d3cfb23f2ff8ce84efcdd4f850848de7f2) Thanks [@nemmtor](https://github.com/nemmtor)! - allow to provide tsconfig path
+
+- [#249](https://github.com/nemmtor/ts-databuilders/pull/249) [`60f1a45`](https://github.com/nemmtor/ts-databuilders/commit/60f1a4587739ce4fdd0df9f539a68875aee117d6) Thanks [@nemmtor](https://github.com/nemmtor)! - fix union type priority
+
 ## 0.0.1-alpha.22
 
 ### Patch Changes
