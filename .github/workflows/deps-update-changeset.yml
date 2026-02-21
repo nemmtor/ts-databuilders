@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Update PR
-        uses: mscharley/dependency-changesets-action@v1.2.2
+        uses: mscharley/dependency-changesets-action@v1.2.3
         with:
           use-conventional-commits: true
           author-name: "Changesets GH Action"
