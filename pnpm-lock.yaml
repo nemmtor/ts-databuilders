@@ -41,13 +41,13 @@ importers:
         version: 2.29.8(@types/node@24.10.13)
       '@commitlint/cli':
         specifier: ^20.1.0
-        version: 20.4.1(@types/node@24.10.13)(typescript@5.9.3)
+        version: 20.4.2(@types/node@24.10.13)(typescript@5.9.3)
       '@commitlint/config-conventional':
         specifier: ^20.0.0
-        version: 20.4.1
+        version: 20.4.2
       '@commitlint/prompt-cli':
         specifier: ^20.1.0
-        version: 20.4.1(@types/node@24.10.13)(typescript@5.9.3)
+        version: 20.4.2(@types/node@24.10.13)(typescript@5.9.3)
       '@effect/language-service':
         specifier: ^0.73.0
         version: 0.73.1
@@ -387,13 +387,13 @@ packages:
   '@changesets/write@0.4.0':
     resolution: {integrity: sha512-CdTLvIOPiCNuH71pyDu3rA+Q0n65cmAbXnwWH84rKGiFumFzkmHNT8KHTMEchcxN+Kl8I54xGUhJ7l3E7X396Q==}
 
-  '@commitlint/cli@20.4.1':
-    resolution: {integrity: sha512-uuFKKpc7OtQM+6SRqT+a4kV818o1pS+uvv/gsRhyX7g4x495jg+Q7P0+O9VNGyLXBYP0syksS7gMRDJKcekr6A==}
+  '@commitlint/cli@20.4.2':
+    resolution: {integrity: sha512-YjYSX2yj/WsVoxh9mNiymfFS2ADbg2EK4+1WAsMuckwKMCqJ5PDG0CJU/8GvmHWcv4VRB2V02KqSiecRksWqZQ==}
     engines: {node: '>=v18'}
     hasBin: true
 
-  '@commitlint/config-conventional@20.4.1':
-    resolution: {integrity: sha512-0YUvIeBtpi86XriqrR+TCULVFiyYTIOEPjK7tTRMxjcBm1qlzb+kz7IF2WxL6Fq5DaundG8VO37BNgMkMTBwqA==}
+  '@commitlint/config-conventional@20.4.2':
+    resolution: {integrity: sha512-rwkTF55q7Q+6dpSKUmJoScV0f3EpDlWKw2UPzklkLS4o5krMN1tPWAVOgHRtyUTMneIapLeQwaCjn44Td6OzBQ==}
     engines: {node: '>=v18'}
 
   '@commitlint/config-validator@20.4.0':
@@ -416,8 +416,8 @@ packages:
     resolution: {integrity: sha512-In5EO4JR1lNsAv1oOBBO24V9ND1IqdAJDKZiEpdfjDl2HMasAcT7oA+5BKONv1pRoLG380DGPE2W2RIcUwdgLA==}
     engines: {node: '>=v18'}
 
-  '@commitlint/lint@20.4.1':
-    resolution: {integrity: sha512-g94LrGl/c6UhuhDQqNqU232aslLEN2vzc7MPfQTHzwzM4GHNnEAwVWWnh0zX8S5YXecuLXDwbCsoGwmpAgPWKA==}
+  '@commitlint/lint@20.4.2':
+    resolution: {integrity: sha512-buquzNRtFng6xjXvBU1abY/WPEEjCgUipNQrNmIWe8QuJ6LWLtei/LDBAzEe5ASm45+Q9L2Xi3/GVvlj50GAug==}
     engines: {node: '>=v18'}
 
   '@commitlint/load@20.4.0':
@@ -432,13 +432,13 @@ packages:
     resolution: {integrity: sha512-XNtZjeRcFuAfUnhYrCY02+mpxwY4OmnvD3ETbVPs25xJFFz1nRo/25nHj+5eM+zTeRFvWFwD4GXWU2JEtoK1/w==}
     engines: {node: '>=v18'}
 
-  '@commitlint/prompt-cli@20.4.1':
-    resolution: {integrity: sha512-5kivMX7Sq5PkxwTqhk/KmhKG52BHIoWvt2a6qY3g+9ZCls/lNjLw1HxMV+raeGk79K+eD/g/Tj+XWWkkzZkivA==}
+  '@commitlint/prompt-cli@20.4.2':
+    resolution: {integrity: sha512-WpawvoC0s+NoH6pZ75HTrwjRze0ZvrwkgoUlKT6FihmOGoPWX7cP7UZbM4pzx0LioxpHYyIt0FBpkH+gK0wcnA==}
     engines: {node: '>=v18'}
     hasBin: true
 
-  '@commitlint/prompt@20.4.1':
-    resolution: {integrity: sha512-dLXTdNnXiWyYPHM9a5gMpZrDTbjrwoJJGICD1aS4eCviw9yc8vNKoTytxR+oNb3xXS9i/0b4Ajhr1ALy996dMQ==}
+  '@commitlint/prompt@20.4.2':
+    resolution: {integrity: sha512-VLUm07fBE500E7u+29f7jg4LDbEQZpiKNlWhP5mB3Pz+AqqnSAK86u4jXKQItRSKcFFxZBvi0pvxJtDOQW1S5Q==}
     engines: {node: '>=v18'}
 
   '@commitlint/read@20.4.0':
@@ -449,8 +449,8 @@ packages:
     resolution: {integrity: sha512-ay1KM8q0t+/OnlpqXJ+7gEFQNlUtSU5Gxr8GEwnVf2TPN3+ywc5DzL3JCxmpucqxfHBTFwfRMXxPRRnR5Ki20g==}
     engines: {node: '>=v18'}
 
-  '@commitlint/rules@20.4.1':
-    resolution: {integrity: sha512-WtqypKEPbQEuJwJS4aKs0OoJRBKz1HXPBC9wRtzVNH68FLhPWzxXlF09hpUXM9zdYTpm4vAdoTGkWiBgQ/vL0g==}
+  '@commitlint/rules@20.4.2':
+    resolution: {integrity: sha512-oz83pnp5Yq6uwwTAabuVQPNlPfeD2Y5ZjMb7Wx8FSUlu4sLYJjbBWt8031Z0osCFPfHzAwSYrjnfDFKtuSMdKg==}
     engines: {node: '>=v18'}
 
   '@commitlint/to-lines@20.0.0':
@@ -1690,6 +1690,9 @@ packages:
 
   ajv@8.17.1:
     resolution: {integrity: sha512-B/gBuNg5SiMTrPkC+A2+cW0RszwxYmn6VYxB/inlBStS5nx6xHIt/ehKRhIMhqusl7a8LjQoZnjCs5vhwxOQ1g==}
+
+  ajv@8.18.0:
+    resolution: {integrity: sha512-PlXPeEWMXMZ7sPYOHqmDyCJzcfNrUr3fGNKtezX14ykXOEIvyK81d+qydx89KY5O71FKMPaQ2vBfBFI5NHR63A==}
 
   angular-html-parser@10.4.0:
     resolution: {integrity: sha512-++nLNyZwRfHqFh7akH5Gw/JYizoFlMRz0KRigfwfsLqV8ZqlcVRb1LkPEWdYvEKDnbktknM2J4BXaYUGrQZPww==}
@@ -3768,10 +3771,10 @@ snapshots:
       human-id: 4.1.2
       prettier: 2.8.8
 
-  '@commitlint/cli@20.4.1(@types/node@24.10.13)(typescript@5.9.3)':
+  '@commitlint/cli@20.4.2(@types/node@24.10.13)(typescript@5.9.3)':
     dependencies:
       '@commitlint/format': 20.4.0
-      '@commitlint/lint': 20.4.1
+      '@commitlint/lint': 20.4.2
       '@commitlint/load': 20.4.0(@types/node@24.10.13)(typescript@5.9.3)
       '@commitlint/read': 20.4.0
       '@commitlint/types': 20.4.0
@@ -3781,7 +3784,7 @@ snapshots:
       - '@types/node'
       - typescript
 
-  '@commitlint/config-conventional@20.4.1':
+  '@commitlint/config-conventional@20.4.2':
     dependencies:
       '@commitlint/types': 20.4.0
       conventional-changelog-conventionalcommits: 9.1.0
@@ -3789,7 +3792,7 @@ snapshots:
   '@commitlint/config-validator@20.4.0':
     dependencies:
       '@commitlint/types': 20.4.0
-      ajv: 8.17.1
+      ajv: 8.18.0
 
   '@commitlint/ensure@20.4.1':
     dependencies:
@@ -3812,11 +3815,11 @@ snapshots:
       '@commitlint/types': 20.4.0
       semver: 7.7.4
 
-  '@commitlint/lint@20.4.1':
+  '@commitlint/lint@20.4.2':
     dependencies:
       '@commitlint/is-ignored': 20.4.1
       '@commitlint/parse': 20.4.1
-      '@commitlint/rules': 20.4.1
+      '@commitlint/rules': 20.4.2
       '@commitlint/types': 20.4.0
 
   '@commitlint/load@20.4.0(@types/node@24.10.13)(typescript@5.9.3)':
@@ -3842,16 +3845,16 @@ snapshots:
       conventional-changelog-angular: 8.1.0
       conventional-commits-parser: 6.2.1
 
-  '@commitlint/prompt-cli@20.4.1(@types/node@24.10.13)(typescript@5.9.3)':
+  '@commitlint/prompt-cli@20.4.2(@types/node@24.10.13)(typescript@5.9.3)':
     dependencies:
-      '@commitlint/prompt': 20.4.1(@types/node@24.10.13)(typescript@5.9.3)
+      '@commitlint/prompt': 20.4.2(@types/node@24.10.13)(typescript@5.9.3)
       inquirer: 9.3.8(@types/node@24.10.13)
       tinyexec: 1.0.2
     transitivePeerDependencies:
       - '@types/node'
       - typescript
 
-  '@commitlint/prompt@20.4.1(@types/node@24.10.13)(typescript@5.9.3)':
+  '@commitlint/prompt@20.4.2(@types/node@24.10.13)(typescript@5.9.3)':
     dependencies:
       '@commitlint/ensure': 20.4.1
       '@commitlint/load': 20.4.0(@types/node@24.10.13)(typescript@5.9.3)
@@ -3879,7 +3882,7 @@ snapshots:
       lodash.mergewith: 4.6.2
       resolve-from: 5.0.0
 
-  '@commitlint/rules@20.4.1':
+  '@commitlint/rules@20.4.2':
     dependencies:
       '@commitlint/ensure': 20.4.1
       '@commitlint/message': 20.4.0
@@ -4817,6 +4820,13 @@ snapshots:
   acorn@8.15.0: {}
 
   ajv@8.17.1:
+    dependencies:
+      fast-deep-equal: 3.1.3
+      fast-uri: 3.1.0
+      json-schema-traverse: 1.0.0
+      require-from-string: 2.0.2
+
+  ajv@8.18.0:
     dependencies:
       fast-deep-equal: 3.1.3
       fast-uri: 3.1.0
